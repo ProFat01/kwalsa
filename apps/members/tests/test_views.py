@@ -36,6 +36,25 @@ class RegisterViewTests(MediaIsolatedTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Membership Registration")
 
+    def test_register_page_displays_gender_field(self):
+        response = self.client.get(reverse("members:register"))
+        self.assertContains(response, 'name="gender"')
+        self.assertContains(response, "Gender")
+
+    def test_registration_saves_gender_on_the_member(self):
+        response = self.client.post(
+            reverse("members:register"), _registration_post_data(gender=Member.Gender.MALE)
+        )
+        self.assertEqual(response.status_code, 302)
+        member = Member.objects.get()
+        self.assertEqual(member.gender, Member.Gender.MALE)
+
+    def test_registration_without_gender_still_succeeds(self):
+        response = self.client.post(reverse("members:register"), _registration_post_data())
+        self.assertEqual(response.status_code, 302)
+        member = Member.objects.get()
+        self.assertEqual(member.gender, "")
+
     def test_successful_registration_redirects_to_success_page_with_application_number(self):
         response = self.client.post(reverse("members:register"), _registration_post_data())
         self.assertEqual(response.status_code, 302)

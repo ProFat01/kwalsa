@@ -98,3 +98,26 @@ class MemberRegistrationFormTests(MediaIsolatedTestCase):
         form = MemberRegistrationForm(data=_valid_form_data(), files=self._files())
         self.assertTrue(form.is_valid())
         self.assertFalse(getattr(form, "duplicate_detected", False))
+
+    def test_gender_is_optional(self):
+        # Matches Member.gender's own blank=True (see models.py) — a
+        # registrant who declines to answer must not be blocked.
+        form = MemberRegistrationForm(data=_valid_form_data(), files=self._files())
+        self.assertTrue(form.is_valid(), form.errors)
+        application = form.save(association=self.association)
+        self.assertEqual(application.member.gender, "")
+
+    def test_valid_gender_choice_is_saved_on_the_member(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(gender=Member.Gender.FEMALE), files=self._files()
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        application = form.save(association=self.association)
+        self.assertEqual(application.member.gender, Member.Gender.FEMALE)
+
+    def test_invalid_gender_value_rejected(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(gender="nonbinary-not-a-real-choice"), files=self._files()
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("gender", form.errors)

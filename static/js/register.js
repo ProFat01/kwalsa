@@ -31,7 +31,7 @@
   var COMPRESS_TRIGGER_BYTES = 800 * 1024; // only bother compressing above ~800KB
   var STEP_TITLES = { 1: "Personal Information", 2: "Academic Information", 3: "Uploads", 4: "Review" };
   var STEP_FIELDS = {
-    1: ["full_name", "phone_number", "nin_number", "date_of_birth"],
+    1: ["full_name", "phone_number", "nin_number", "date_of_birth", "gender"],
     2: ["institution", "course", "category"],
     3: ["passport_photo", "receipt_image"],
   };

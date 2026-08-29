@@ -28,6 +28,22 @@ class MemberRegistrationForm(forms.ModelForm):
         help_text="Upload your payment receipt (image, max 5 MB).",
     )
 
+    # Member.gender is blank=True on the model (see models.py — added for
+    # the Membership Card System, optional because no registration flow
+    # collected it yet and every pre-existing Member has it empty). That
+    # same optionality is the business rule here: registrants may decline
+    # to answer, exactly like apps.accounts.forms's Communication Center
+    # targeting field treats this identical choice set. Declared
+    # explicitly (rather than left to ModelForm auto-generation) only to
+    # match that field's "---" blank-option label instead of Django's
+    # default "---------", for a consistent placeholder across the app;
+    # the choices themselves still come from Member.Gender, not a
+    # hardcoded list.
+    gender = forms.ChoiceField(
+        choices=[("", "---")] + list(Member.Gender.choices),
+        required=False,
+    )
+
     class Meta:
         model = Member
         fields = [
@@ -35,6 +51,7 @@ class MemberRegistrationForm(forms.ModelForm):
             "phone_number",
             "nin_number",
             "date_of_birth",
+            "gender",
             "email",
             "institution",
             "course",
@@ -54,8 +71,11 @@ class MemberRegistrationForm(forms.ModelForm):
     # *before* the Meta-derived ones.
     # v1.1: email added after date_of_birth (personal info step);
     # faculty/department/level added inside the academic step.
+    # v1.2: gender added after date_of_birth (personal info step),
+    # alongside the other Member.gender consumers (admin, staff list,
+    # analytics, election eligibility) — see forms.py class comment above.
     field_order = [
-        "full_name", "phone_number", "nin_number", "date_of_birth", "email",
+        "full_name", "phone_number", "nin_number", "date_of_birth", "gender", "email",
         "institution", "course", "faculty", "department", "level",
         "category", "passport_photo", "receipt_image",
     ]
