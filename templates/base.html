@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}SAMS{% endblock %} — {% block title_suffix %}Malam Sidi Students Association{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Malam Sidi Students Association — membership registration, elections, and live results.{% endblock %}">
-  <meta property="og:title" content="{% block og_title %}SAMS — Malam Sidi Students Association{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Membership registration, elections, and live results for Malam Sidi Students Association.{% endblock %}">
+  <title>{% block title %}SAMS{% endblock %} — {% block title_suffix %}{{ association.name|default:"SAMS" }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ association.name|default:"SAMS" }} — membership registration, elections, and live results.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}SAMS — {{ association.name|default:"SAMS" }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Membership registration, elections, and live results for {{ association.name|default:"SAMS" }}.{% endblock %}">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -103,7 +103,7 @@
           <img src="{{ association.logo.url }}" alt="{{ association.short_name }} logo" class="footer-logo">
         {% endif %}
         <p class="footer-heading">{{ association.short_name|default:"SAMS" }}</p>
-        <p>{{ association.name|default:"Malam Sidi Students Association" }}</p>
+        <p>{{ association.name|default:"SAMS" }}</p>
       </div>
       <div class="footer-quicklinks">
         <p class="footer-heading">Quick Links</p>
@@ -136,7 +136,7 @@
       </div>
     </div>
     <div class="container footer-bottom">
-      <span>&copy; {% now "Y" %} {{ association.name|default:"Malam Sidi Students Association" }}.</span>
+      <span>&copy; {% now "Y" %} {{ association.name|default:"SAMS" }}.</span>
       <span>Built on SAMS.</span>
     </div>
     <div class="container footer-credit">

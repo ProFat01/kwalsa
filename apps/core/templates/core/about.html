@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% load core_extras %}
 
 {% block title %}About{% endblock %}
 {% block og_title %}About {{ association.name|default:"SAMS" }}{% endblock %}
-{% block meta_description %}History, mission, vision, and leadership of {{ association.name|default:"Malam Sidi Students Association" }}.{% endblock %}
+{% block meta_description %}Who we are, our motto, aims, and objectives — {{ association.name|default:"SAMS" }}.{% endblock %}
 
 {% block content %}
 <div class="container section">
@@ -13,19 +14,52 @@
     {% if site_settings.motto %}<p class="about-motto">&ldquo;{{ site_settings.motto }}&rdquo;</p>{% endif %}
 
     <div class="content-block">
-      <h2>Our History</h2>
+      <h2>Who We Are</h2>
       <p>{{ site_settings.about_text|default:"This section is awaiting content from the association's administrators." }}</p>
     </div>
 
+    {% if site_settings.aims %}
+    <div class="content-block">
+      <h2>Our Aims</h2>
+      <ul>
+        {% for aim in site_settings.aims|split_lines %}
+          <li>{{ aim }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if site_settings.objectives %}
+    <div class="content-block">
+      <h2>Our Objectives</h2>
+      <ul>
+        {% for objective in site_settings.objectives|split_lines %}
+          <li>{{ objective }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if site_settings.mission %}
     <div class="content-block">
       <h2>Our Mission</h2>
-      <p>{{ site_settings.mission|default:"This section is awaiting content from the association's administrators." }}</p>
+      <p>{{ site_settings.mission }}</p>
     </div>
+    {% endif %}
 
+    {% if site_settings.vision %}
     <div class="content-block">
       <h2>Our Vision</h2>
-      <p>{{ site_settings.vision|default:"This section is awaiting content from the association's administrators." }}</p>
+      <p>{{ site_settings.vision }}</p>
     </div>
+    {% endif %}
+
+    {% if site_settings.membership_info %}
+    <div class="content-block">
+      <h2>Who Can Be a Member</h2>
+      <p>{{ site_settings.membership_info }}</p>
+    </div>
+    {% endif %}
 
     <div class="content-block">
       <h2>Leadership</h2>

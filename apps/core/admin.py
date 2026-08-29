@@ -18,7 +18,7 @@ class SiteSettingsInline(admin.StackedInline):
     can_delete = False
     fieldsets = (
         ("Branding", {"fields": ("motto", "welcome_message", "hero_image")}),
-        ("About page content", {"fields": ("about_text", "mission", "vision", "leadership_text")}),
+        ("About page content", {"fields": ("about_text", "mission", "vision", "aims", "objectives", "membership_info", "leadership_text")}),
         ("Contact details", {"fields": ("contact_email", "contact_phone", "address")}),
         ("Donations", {"fields": ("donation_details",)}),
         ("Social links", {"fields": ("facebook_url", "x_url", "instagram_url", "whatsapp_url")}),

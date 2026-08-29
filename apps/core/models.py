@@ -83,6 +83,24 @@ class SiteSettings(models.Model):
     about_text = models.TextField(blank=True, help_text="Brief history of the association, shown on the About page.")
     mission = models.TextField(blank=True)
     vision = models.TextField(blank=True)
+    aims = models.TextField(
+        blank=True,
+        help_text=(
+            "The association's aims, as stated in its constitution — one per line. "
+            "Shown as a bulleted list on the About page. Kept distinct from Mission/"
+            "Vision: a constitution's 'Aims' section is its own category, not "
+            "necessarily equivalent to either, so this exists rather than forcing "
+            "that content into a field with a different meaning."
+        ),
+    )
+    objectives = models.TextField(
+        blank=True,
+        help_text="The association's objectives, as stated in its constitution — one per line. Shown as a bulleted list on the About page.",
+    )
+    membership_info = models.TextField(
+        blank=True,
+        help_text="Who can join and any membership conditions, as stated in the constitution — shown on the About page.",
+    )
     leadership_text = models.TextField(
         blank=True,
         help_text=(

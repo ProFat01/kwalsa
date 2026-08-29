@@ -38,7 +38,14 @@ logger = logging.getLogger("apps.members.email_service")
 _HTML_TEMPLATE = "members/email/approval_email.html"
 _TXT_TEMPLATE = "members/email/approval_email.txt"
 
-APPROVAL_EMAIL_SUBJECT = "Welcome to Malam Sidi Students Association"
+def approval_email_subject(association):
+    """
+    Per-association welcome subject, e.g. "Welcome to Kwami Local
+    Government Students' Association" — built from the live Association
+    record rather than a hardcoded string, so this stays correct if
+    DEFAULT_ASSOCIATION_SLUG ever points at a different tenant.
+    """
+    return f"Welcome to {association.name}"
 
 
 def send_approval_email(member, request=None):
@@ -133,7 +140,7 @@ def _send(member, request):
 
     mailjet_service.send_email(
         to_email=member.email,
-        subject=APPROVAL_EMAIL_SUBJECT,
+        subject=approval_email_subject(association),
         html_body=html_body,
         text_body=text_body,
         to_name=member.full_name,

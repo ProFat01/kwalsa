@@ -3,7 +3,7 @@
 
 {% block title %}Home{% endblock %}
 {% block og_title %}{{ association.name|default:"SAMS" }} — Home{% endblock %}
-{% block meta_description %}{% if site_settings.welcome_message %}{{ site_settings.welcome_message|truncatewords:30 }}{% else %}Membership registration, elections, and live results for {{ association.name|default:"Malam Sidi Students Association" }}.{% endif %}{% endblock %}
+{% block meta_description %}{% if site_settings.welcome_message %}{{ site_settings.welcome_message|truncatewords:30 }}{% else %}Membership registration, elections, and live results for {{ association.name|default:"SAMS" }}.{% endif %}{% endblock %}
 {% block extra_js %}<script src="{% static 'js/home.js' %}" defer></script>{% endblock %}
 
 {% block content %}

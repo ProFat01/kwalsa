@@ -58,6 +58,7 @@ def register_view(request):
         "members/register.html",
         {
             "form": form,
+            "association": association,
             "association_missing": False,
             "show_recovery_cta": getattr(form, "duplicate_detected", False),
         },
