@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+{% block meta_description %}Your SAMS membership profile.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>My Profile</h1>
+<p class="help-text u-max-38">This information is view-only. If anything here needs to be corrected — your NIN, phone number, institution, or membership ID — please contact the Registration Admin; these can't be changed from the portal.</p>
+
+<div class="profile-card">
+  {% if member.passport_photo %}
+    <img src="{{ member.passport_photo.url }}" alt="{{ member.full_name }}" class="profile-card-photo">
+  {% else %}
+    <div class="profile-card-photo profile-card-photo-placeholder" aria-hidden="true">{{ member.full_name|first|upper }}</div>
+  {% endif %}
+  <div class="profile-card-body">
+    <h2>{{ member.full_name }}</h2>
+    <p class="record u-text-muted">{{ member.membership_id|default:"Membership ID not yet assigned" }}</p>
+  </div>
+</div>
+
+<dl class="info-card">
+  <dt>Full Name</dt>
+  <dd>{{ member.full_name }}</dd>
+  <dt>Phone Number</dt>
+  <dd class="record">{{ member.phone_number }}</dd>
+  <dt>NIN Number</dt>
+  <dd class="record">{{ member.nin_number }}</dd>
+  {% if member.email %}
+  <dt>Email Address</dt>
+  <dd>{{ member.email }}</dd>
+  {% endif %}
+  <dt>Date of Birth</dt>
+  <dd>{{ member.date_of_birth|date:"d M Y" }}</dd>
+  <dt>Institution</dt>
+  <dd>{{ member.institution }}</dd>
+  <dt>Course</dt>
+  <dd>{{ member.course }}</dd>
+  {% if member.faculty %}
+  <dt>Faculty</dt>
+  <dd>{{ member.faculty }}</dd>
+  {% endif %}
+  {% if member.department %}
+  <dt>Department</dt>
+  <dd>{{ member.department }}</dd>
+  {% endif %}
+  {% if member.level %}
+  <dt>Level</dt>
+  <dd>{{ member.level }}</dd>
+  {% endif %}
+  <dt>Category</dt>
+  <dd>{{ member.get_category_display }}</dd>
+  <dt>Membership ID</dt>
+  <dd class="record">{{ member.membership_id|default:"Not yet assigned" }}</dd>
+  <dt>Registration Date</dt>
+  <dd>{{ member.registration_date|date:"d M Y" }}</dd>
+  <dt>Member Status</dt>
+  <dd>{{ member.get_approval_status_display }}</dd>
+  <dt>Voting Status</dt>
+  <dd>{% if member.voting_status %}Eligible{% else %}Not Eligible{% endif %}</dd>
+  <dt>Alumni Status</dt>
+  <dd>{% if member.alumni_status %}Alumni{% else %}Current Member{% endif %}</dd>
+</dl>
+
+<a href="{% url 'members:portal_dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+</div>
+{% endblock %}

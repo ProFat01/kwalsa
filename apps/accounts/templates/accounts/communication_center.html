@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Communication Center{% endblock %}
+{% block meta_description %}Send announcements to members by email, with SMS and push notification coming soon.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Communication Center</h1>
+<p class="meta"><a href="{% url 'accounts:dashboard' %}">&larr; Back to Dashboard</a></p>
+
+<div class="quick-actions-grid u-mb-3">
+  <a class="quick-action-card" href="{% url 'accounts:communication_compose' %}">
+    <span class="quick-action-icon" aria-hidden="true">&#128172;</span>
+    <span class="quick-action-label">Compose Announcement</span>
+  </a>
+  <a class="quick-action-card" href="{% url 'accounts:communication_history' %}">
+    <span class="quick-action-icon" aria-hidden="true">&#128220;</span>
+    <span class="quick-action-label">View History</span>
+  </a>
+</div>
+
+<h2>Delivery Providers</h2>
+<div class="provider-grid">
+  {% for provider in providers %}
+    <div class="provider-card {% if not provider.enabled %}is-disabled{% endif %}">
+      <div class="provider-name">{{ provider.label }}</div>
+      <div class="provider-status">{% if provider.enabled %}<span class="status-label status-success">Available</span>{% else %}<span class="status-label status-neutral">Coming Soon</span>{% endif %}</div>
+    </div>
+  {% endfor %}
+</div>
+
+<h2>Recent Announcements</h2>
+{% if recent_announcements %}
+  <table class="data-table">
+    <thead><tr><th>Subject</th><th>Recipients</th><th>Delivery</th><th>Status</th><th>Sent</th><th></th></tr></thead>
+    <tbody>
+      {% for announcement in recent_announcements %}
+        <tr>
+          <td>{{ announcement.subject }}</td>
+          <td class="record">{{ announcement.recipient_count }}</td>
+          <td>{{ announcement.get_delivery_method_display }}</td>
+          <td><span class="status-label status-{% if announcement.status == 'sent' %}success{% elif announcement.status == 'partial' %}warning{% elif announcement.status == 'failed' %}error{% else %}neutral{% endif %}">{{ announcement.get_status_display }}</span></td>
+          <td>{{ announcement.created_at|date:"d M Y, H:i" }}</td>
+          <td><a href="{% url 'accounts:communication_detail' announcement.pk %}">View &rarr;</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p><a href="{% url 'accounts:communication_history' %}" class="btn">View All History</a></p>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#128172;</div>
+    <p>No announcements sent yet.</p>
+    <a href="{% url 'accounts:communication_compose' %}" class="btn">Compose Your First Announcement</a>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

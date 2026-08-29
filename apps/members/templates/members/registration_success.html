@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registration Submitted{% endblock %}
+{% block meta_description %}Your membership application has been submitted.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<div class="success-panel u-max-34">
+  <div class="success-icon" aria-hidden="true">&#10003;</div>
+  <h1>Registration Submitted Successfully.</h1>
+  <p>Your application has been received and is now pending review.</p>
+
+  <dl class="info-card">
+    <dt>Application Number</dt>
+    <dd class="record" id="application-number">{{ application.application_number }}</dd>
+
+    <dt>Applicant</dt>
+    <dd>{{ application.member.full_name }}</dd>
+
+    <dt>Current Status</dt>
+    <dd><span class="badge badge-upcoming">Pending Review</span></dd>
+  </dl>
+
+  <p class="u-text-muted">Keep your application number safe &mdash; you'll need it (or your NIN and phone number) to check your status later.</p>
+
+  <div class="success-actions">
+    <button type="button" class="btn btn-outline" id="copy-application-number" data-copy-value="{{ application.application_number }}">Copy Application Number</button>
+    <a href="{% url 'members:status_check' %}" class="btn">Check Registration Status</a>
+    <a href="{% url 'core:home' %}" class="btn btn-outline">Return Home</a>
+  </div>
+  <span class="copy-feedback" id="copy-feedback" role="status" aria-live="polite"></span>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/registration_success.js' %}" defer></script>{% endblock %}

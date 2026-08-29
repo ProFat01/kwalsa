@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Announcement History{% endblock %}
+{% block meta_description %}History of every announcement sent to members.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Announcement History</h1>
+<p class="meta"><a href="{% url 'accounts:communication_center' %}">&larr; Back to Communication Center</a></p>
+
+{% if announcements %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Created By</th>
+        <th>Date</th>
+        <th>Recipients</th>
+        <th>Delivery</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for announcement in announcements %}
+        <tr>
+          <td>{{ announcement.subject }}</td>
+          <td>{{ announcement.created_by.get_full_name|default:announcement.created_by.username|default:"—" }}</td>
+          <td>{{ announcement.created_at|date:"d M Y, H:i" }}</td>
+          <td class="record">{{ announcement.recipient_count }}</td>
+          <td>{{ announcement.get_delivery_method_display }}</td>
+          <td><span class="status-label status-{% if announcement.status == 'sent' %}success{% elif announcement.status == 'partial' %}warning{% elif announcement.status == 'failed' %}error{% else %}neutral{% endif %}">{{ announcement.get_status_display }}</span></td>
+          <td><a href="{% url 'accounts:communication_detail' announcement.pk %}">View &rarr;</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if announcements.has_other_pages %}
+    <nav class="pagination" aria-label="Announcement history pages">
+      {% if announcements.has_previous %}<a href="?page={{ announcements.previous_page_number }}">&larr; Previous</a>{% endif %}
+      <span class="meta">Page {{ announcements.number }} of {{ announcements.paginator.num_pages }}</span>
+      {% if announcements.has_next %}<a href="?page={{ announcements.next_page_number }}">Next &rarr;</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#128220;</div>
+    <p>No announcements have been sent yet.</p>
+    <a href="{% url 'accounts:communication_compose' %}" class="btn">Compose an Announcement</a>
+  </div>
+{% endif %}
+</div>
+{% endblock %}

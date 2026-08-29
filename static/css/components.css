@@ -1,0 +1,840 @@
+/* =============================================================
+   SAMS -- components.css
+   Reusable components shared across modules, plus the landing
+   page's signature elements (hero membership-card, stats ledger).
+   ============================================================= */
+
+/* --- Badges --- */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-upcoming { background: var(--brass-tint); color: var(--brass); }
+.badge-active { background: var(--civic-green-tint); color: var(--civic-green-deep); }
+.badge-closed { background: #eceef0; color: #4a4f55; }
+
+/* --- Cards --- */
+.election-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+.election-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.election-card h2, .election-card h3 { margin: 0 0 var(--space-2); font-size: 1.1rem; }
+.election-card .meta { color: var(--slate); font-size: 0.9rem; margin-bottom: var(--space-2); }
+.election-card .actions { margin-top: var(--space-3); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+
+/* --- Tables --- */
+table.data-table { width: 100%; border-collapse: collapse; background: var(--surface); margin-bottom: var(--space-6); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+table.data-table th, table.data-table td { padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--line); text-align: left; }
+table.data-table th { background: var(--surface-soft); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate); }
+table.data-table tbody tr { transition: background var(--transition-fast); }
+table.data-table tbody tr:hover { background: var(--paper); }
+table.data-table tr:last-child td { border-bottom: none; }
+table.data-table td.is-number, table.data-table th.is-number { font-family: var(--font-record); }
+.results-candidate-photo {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+
+@media (max-width: 600px) {
+  table.data-table { display: block; overflow-x: auto; white-space: nowrap; border-radius: var(--radius); }
+}
+
+/* --- Statistic cards ---
+   Reused, unmodified in the templates, across every module's
+   dashboards (analytics x4, elections admin dashboard, registration
+   overview, the landing-page ledger) -- so improving this single
+   component upgrades every "Members / Alumni / Votes / Elections"
+   summary in the whole app at once. */
+.summary-stats { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-bottom: var(--space-6); }
+.summary-stat {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 4px);
+  min-width: 150px;
+  flex: 1;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+  overflow: hidden;
+}
+.summary-stat::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: var(--civic-green);
+}
+.summary-stat:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.summary-stat .value { font-family: var(--font-record); font-size: 1.65rem; font-weight: 600; color: var(--ink); line-height: 1.2; }
+.summary-stat .label { font-size: 0.8rem; color: var(--slate); margin-top: var(--space-1); }
+
+@media (max-width: 768px) {
+  .summary-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
+  .summary-stat {
+    min-width: 0;
+    padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--space-3) + 4px);
+  }
+  .summary-stat .value { font-size: 1.35rem; }
+}
+
+.vote-bar-track { background: var(--surface-soft); border-radius: var(--radius-full); height: 8px; overflow: hidden; margin-top: var(--space-1); }
+.vote-bar-fill { background: var(--civic-green); height: 100%; width: 0; border-radius: var(--radius-full); transition: width 0.6s ease; } /* width set by JS from data-percentage, see static/js/site.js */
+
+.position-block { margin-bottom: var(--space-8); }
+.position-block h3 { margin: 0 0 var(--space-3); }
+
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 30rem;
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+.info-card dt { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--slate); margin-top: var(--space-4); }
+.info-card dt:first-child { margin-top: 0; }
+.info-card dd { margin: var(--space-1) 0 0; font-size: 1.05rem; }
+.info-card dd.record { font-size: 1.25rem; color: var(--civic-green-deep); }
+
+.candidate-option {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+  background: var(--surface);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+.candidate-option:hover { border-color: var(--civic-green); background: var(--civic-green-tint); }
+.candidate-option:focus-within { border-color: var(--civic-green); box-shadow: 0 0 0 3px var(--civic-green-tint); }
+.candidate-option input { margin-right: var(--space-2); }
+.candidate-option-photo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+.candidate-option .manifesto { color: var(--slate); font-size: 0.9rem; margin: var(--space-1) 0 0 1.6rem; }
+
+.candidate-profile {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-2);
+  background: var(--surface);
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+.candidate-profile:hover { box-shadow: var(--shadow-md); }
+.candidate-profile-photo {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+.candidate-profile-body { flex: 1; min-width: 0; }
+.candidate-profile .name { font-weight: 600; }
+.candidate-profile .manifesto { color: var(--slate); font-size: 0.9rem; margin: var(--space-1) 0 0; }
+
+/* =============================================================
+   Landing page
+   ============================================================= */
+
+/* --- Hero --- */
+.hero {
+  background: linear-gradient(160deg, var(--ink) 0%, var(--civic-green-deep) 130%);
+  color: #fff;
+  padding: var(--space-16) 0;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+.hero-eyebrow {
+  font-family: var(--font-record);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brass-tint);
+  margin-bottom: var(--space-3);
+}
+.hero h1 { color: #fff; margin-bottom: var(--space-2); }
+.hero .motto { font-family: var(--font-display); font-style: italic; font-size: 1.2rem; color: rgba(255, 255, 255, 0.85); margin-bottom: var(--space-4); }
+.hero .welcome { color: rgba(255, 255, 255, 0.82); font-size: 1.05rem; max-width: 38rem; }
+
+/* Signature element: a CSS-rendered membership card, echoing the real
+   MSA-2026-0001 identifiers used throughout the system. Not a literal
+   screenshot -- a deliberately simplified motif of what a member
+   actually receives once approved, to make the "become a member"
+   action feel concrete. */
+.member-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-base);
+}
+.member-card:hover { transform: translateY(-4px); }
+.member-card::before {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 140px; height: 140px;
+  background: var(--civic-green-tint);
+  border-radius: 50%;
+}
+.member-card-seal {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--civic-green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: var(--space-4);
+  position: relative;
+}
+.member-card-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate); margin-bottom: var(--space-1); position: relative; }
+.member-card-id { font-family: var(--font-record); font-size: 1.3rem; letter-spacing: 0.04em; margin-bottom: var(--space-4); position: relative; }
+.member-card-rule { border-top: 1px dashed var(--line); margin: var(--space-4) 0; position: relative; }
+.member-card-foot { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--slate); position: relative; }
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .member-card { max-width: 320px; }
+}
+
+/* --- Stats ledger strip --- */
+.ledger {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.ledger-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-6);
+  padding: var(--space-8) 0;
+  text-align: center;
+}
+.ledger-stat .value { font-family: var(--font-record); font-size: 2rem; font-weight: 600; color: var(--civic-green-deep); }
+.ledger-stat .label { font-size: 0.85rem; color: var(--slate); margin-top: var(--space-1); }
+
+/* --- About section (on landing page) --- */
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-8);
+}
+.about-grid h3 { font-size: 1.05rem; color: var(--civic-green-deep); }
+
+/* --- Election status section --- */
+.status-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-6);
+}
+.status-column h3 { display: flex; align-items: center; gap: var(--space-2); }
+
+/* --- CTA section --- */
+.cta-section {
+  background: var(--ink);
+  color: #fff;
+  text-align: center;
+}
+.cta-section h2 { color: #fff; }
+.cta-section p { color: rgba(255, 255, 255, 0.78); max-width: 36rem; margin: 0 auto var(--space-6); }
+
+/* --- About page content blocks --- */
+.content-block { margin-bottom: var(--space-8); }
+.content-block h2 { color: var(--civic-green-deep); }
+.about-motto { font-family: var(--font-display); font-style: italic; color: var(--civic-green-deep); }
+
+/* --- Contact page --- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: var(--space-12);
+}
+.contact-detail { margin-bottom: var(--space-4); }
+.contact-detail dt { font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--slate); }
+.contact-detail dd { margin: var(--space-1) 0 0; }
+@media (max-width: 768px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}
+
+/* =============================================================
+   Landing Page Experience (Module 2)
+   New sections only: Why Join, Active Election spotlight,
+   countdown timer, live results preview (progress bars + CSS-only
+   pie chart), and the hero's dynamic background-image support.
+   Statistics reuse the existing .summary-stat card from Module 1
+   unchanged; results-preview bars reuse the existing
+   .vote-bar-track/.vote-bar-fill unchanged.
+   ============================================================= */
+
+/* --- Hero: logo-in-seal, dynamic background image --- */
+.member-card-seal-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+/* Background image itself is applied by static/js/home.js via
+   el.style.backgroundImage (individual CSSOM property assignment --
+   CSP-safe, same pattern already used for vote-bar widths). This rule
+   only supplies the dark overlay gradient + sizing so text stays
+   legible over any photo without needing per-image tuning. */
+.hero--with-image {
+  background-size: cover;
+  background-position: center;
+}
+.hero--with-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, rgba(22, 33, 44, 0.92) 0%, rgba(15, 74, 48, 0.85) 130%);
+}
+.hero { position: relative; overflow: hidden; }
+.hero > .container { position: relative; z-index: 1; }
+
+/* --- Live statistics: cards that overlap the hero's bottom edge --- */
+.stats-overlap {
+  margin-top: -2.5rem;
+  position: relative;
+  z-index: 2;
+}
+@media (max-width: 768px) {
+  .stats-overlap { margin-top: -1.5rem; }
+}
+
+/* --- Why Join --- */
+.benefit-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+  text-align: left;
+}
+.benefit-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.benefit-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  background: var(--civic-green-tint);
+  color: var(--civic-green-deep);
+  margin-bottom: var(--space-4);
+}
+.benefit-card-icon svg { width: 24px; height: 24px; }
+.benefit-card h3 { margin-bottom: var(--space-2); font-size: 1.05rem; }
+.benefit-card p { margin: 0; font-size: 0.92rem; }
+
+/* --- Active election spotlight --- */
+.spotlight-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-md);
+}
+.spotlight-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.spotlight-meta { color: var(--slate); font-size: 0.95rem; }
+
+.countdown {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin: var(--space-6) 0;
+}
+.countdown-unit {
+  background: var(--surface-soft);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  min-width: 4.5rem;
+}
+.countdown-unit .value {
+  font-family: var(--font-record);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--civic-green-deep);
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+.countdown-unit .label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate);
+}
+.countdown-ended {
+  font-weight: 600;
+  color: var(--warning);
+}
+
+/* --- Live results preview: ranking rows reuse .vote-bar-track/.vote-bar-fill --- */
+.results-preview-list { list-style: none; margin: 0 0 var(--space-6); padding: 0; }
+.results-preview-row { margin-bottom: var(--space-4); }
+.results-preview-row .row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-1);
+  gap: var(--space-2);
+}
+.results-preview-row .candidate-name { font-weight: 600; }
+.results-preview-row .vote-count { font-family: var(--font-record); color: var(--slate); font-size: 0.9rem; }
+.results-preview-row:first-child .candidate-name::before {
+  content: "\2605";
+  color: var(--brass);
+  margin-right: var(--space-1);
+}
+
+/* --- CSS-only pie chart preview ---
+   The conic-gradient itself is applied by home.js reading each legend
+   item's data-percentage (same established pattern as the vote bars);
+   this file only supplies the static geometry/legend styling. */
+.pie-chart-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+.pie-chart {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  flex-shrink: 0;
+}
+.pie-chart-legend { list-style: none; margin: 0; padding: 0; flex: 1; min-width: 180px; }
+.pie-chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+  margin-bottom: var(--space-2);
+}
+.pie-chart-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .pie-chart-wrap { flex-direction: column; align-items: flex-start; }
+}
+
+/* --- No active election notice --- */
+.no-election-notice {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--slate);
+  background: var(--surface-soft);
+  border-radius: var(--radius-lg);
+}
+
+/* =============================================================
+   Registration wizard (Stage 8: Registration Experience)
+
+   Progressive enhancement over the plain single-page registration
+   form: register.js hides everything but the active .wizard-step and
+   drives this progress UI. Every rule here degrades harmlessly if the
+   JS never runs -- .wizard-progress ships `hidden` in the markup and
+   only register.js reveals it, so a no-JS visit just sees one long,
+   already-styled form with all fields visible, using the same
+   .form-row/.field-error primitives as every other form on the site.
+   ============================================================= */
+
+.wizard-progress { margin-bottom: var(--space-6); }
+.wizard-progress-steps { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); }
+.wizard-progress-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  color: var(--slate);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-record);
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
+}
+.wizard-progress-dot.is-current { background: var(--civic-green); border-color: var(--civic-green); color: #fff; }
+.wizard-progress-dot.is-complete { background: var(--civic-green-tint); border-color: var(--civic-green); color: var(--civic-green-deep); }
+
+.wizard-progress-track { background: var(--surface-soft); border-radius: var(--radius-full); height: 6px; overflow: hidden; }
+.wizard-progress-fill {
+  background: var(--civic-green);
+  height: 100%;
+  width: 25%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+.wizard-progress-label { font-size: 0.9rem; color: var(--slate); margin: var(--space-2) 0 0; font-weight: 600; }
+
+.wizard-step-title { margin-bottom: var(--space-4); }
+.wizard-step-title:focus-visible { outline: none; }
+
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+.wizard-nav .btn:only-child { margin-left: auto; }
+
+/* --- Live phone / NIN feedback --- */
+.input-with-feedback { position: relative; display: flex; align-items: center; }
+.input-with-feedback input { padding-right: 2.4rem; }
+.input-feedback-icon {
+  position: absolute;
+  right: var(--space-3);
+  font-weight: 700;
+  font-size: 1rem;
+  pointer-events: none;
+}
+.input-feedback-icon.is-valid { color: var(--success); }
+.input-feedback-icon.is-invalid { color: var(--error); }
+.field-live-feedback { font-size: 0.85rem; margin: var(--space-2) 0 0; font-weight: 600; }
+.field-live-feedback.is-valid { color: var(--success); }
+.field-live-feedback.is-invalid { color: var(--error); }
+.field-live-feedback:empty { margin: 0; }
+
+/* --- Upload preview --- */
+.upload-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.upload-preview-thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.upload-preview-meta { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.upload-preview-name { font-weight: 600; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.upload-preview-size { font-family: var(--font-record); font-size: 0.8rem; color: var(--slate); }
+.upload-preview-status { font-size: 0.78rem; color: var(--civic-green-deep); }
+.upload-preview-remove {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--slate);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.upload-preview-remove:hover { background: var(--error-tint); color: var(--error); border-color: transparent; }
+.upload-warning { color: var(--warning); background: var(--warning-tint); border-radius: var(--radius); padding: var(--space-2) var(--space-3); font-size: 0.85rem; font-weight: 600; margin-top: var(--space-3); }
+
+/* --- Review step --- */
+.wizard-review { display: flex; flex-direction: column; gap: var(--space-6); }
+.review-section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-4); }
+.review-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+.review-section-head h3 { margin: 0; font-size: 1rem; }
+.review-edit-btn {
+  background: transparent;
+  border: 1px solid var(--civic-green);
+  color: var(--civic-green-deep);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.review-edit-btn:hover { background: var(--civic-green); color: #fff; }
+.review-fields { display: grid; grid-template-columns: minmax(120px, 1fr) 2fr; gap: var(--space-2) var(--space-3); margin: 0; }
+.review-fields dt { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--slate); font-weight: 600; }
+.review-fields dd { margin: 0; display: flex; align-items: center; gap: var(--space-2); word-break: break-word; }
+.review-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--line); flex-shrink: 0; }
+
+@media (max-width: 600px) {
+  .review-fields { grid-template-columns: 1fr; }
+  .review-fields dd { margin-bottom: var(--space-2); }
+}
+
+/* --- Friendly error / recovery cards (duplicate registration etc.) --- */
+.error-card { flex-direction: column; align-items: stretch; }
+.error-card .btn { align-self: flex-start; }
+
+/* --- Registration success panel --- */
+.success-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  margin: 0 auto;
+}
+.success-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto var(--space-4);
+  border-radius: 50%;
+  background: var(--success-tint);
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.success-panel .info-card { text-align: left; margin: var(--space-6) 0; }
+.success-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); justify-content: center; margin-top: var(--space-6); }
+.copy-feedback { display: inline-block; font-size: 0.85rem; color: var(--success); font-weight: 600; margin-left: var(--space-2); min-height: 1.2em; }
+
+/* =============================================================
+   Member self-service portal (Stage 8)
+   ============================================================= */
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+.profile-card-photo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--civic-green-tint);
+  flex-shrink: 0;
+}
+.profile-card-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--civic-green-tint);
+  color: var(--civic-green-deep);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+}
+/* Modifier for use inside a centered ancestor (e.g. .verify-result on
+   the public verification page) where the card itself must stay
+   left-aligned. Kept as a class, not an inline style="", so
+   style-src stays 'self'-only in production (see CSP config in
+   config/settings/production.py). */
+.profile-card--left { text-align: left; }
+.profile-card-body h2 { margin: 0 0 var(--space-1); }
+.profile-status-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* Logout is a POST-only form in the nav (not a GET link) so it behaves
+   like every other state-changing action on the site, but it should
+   still look and sit exactly like the other nav items. .nav-links a's
+   base styling is `a`-selector-specific, so it's replicated here for
+   the <button> rather than relied on. */
+.nav-logout-form { margin: 0; display: contents; }
+.nav-links .nav-logout-btn {
+  display: inline-block;
+  border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  cursor: pointer;
+  background: var(--civic-green);
+  color: #fff;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.nav-links .nav-logout-btn:hover,
+.nav-links .nav-logout-btn:focus-visible { background: var(--civic-green-deep); }
+
+/* Keeps the logout button's touch target and type size in step with
+   the rest of the mobile nav column (base.css bumps .nav-links a to
+   the same values at this breakpoint) -- without this the button was
+   the one item left at desktop density, breaking the vertical rhythm. */
+@media (max-width: 768px) {
+  .nav-links .nav-logout-btn {
+    padding: var(--space-3) var(--space-3);
+    font-size: 1rem;
+    margin-top: var(--space-2);
+  }
+}
+
+/* =============================================================
+   Version 1.2 "Admin Experience" polish -- dashboard hub additions.
+   Purely additive: .summary-stat itself is untouched, these are new
+   optional child/sibling classes so existing usages of .summary-stat
+   elsewhere (that don't opt in to them) render exactly as before.
+   ============================================================= */
+.summary-stat-icon { font-size: 1.2rem; margin-bottom: var(--space-1); line-height: 1; }
+.summary-stat-desc { font-size: 0.78rem; color: var(--slate); margin-top: var(--space-1); }
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 1.05rem;
+}
+.section-heading .section-heading-icon { font-size: 1.1em; line-height: 1; }
+
+/* --- Quick Actions panel --- */
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-2) 0 var(--space-8);
+}
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  text-decoration: none !important;
+  color: var(--ink) !important;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast), border-color var(--transition-fast);
+}
+.quick-action-card:hover, .quick-action-card:focus-visible {
+  border-color: var(--civic-green);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+.quick-action-card .quick-action-icon {
+  flex: none;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--civic-green-tint);
+  border-radius: var(--radius-sm);
+  font-size: 1.15rem;
+}
+.quick-action-card .quick-action-label { font-weight: 600; font-size: 0.92rem; }
+
+/* --- Empty states --- */
+.empty-state {
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  color: var(--slate);
+  margin-bottom: var(--space-6);
+}
+.empty-state .empty-state-icon { font-size: 2.2rem; margin-bottom: var(--space-2); opacity: 0.6; }
+.empty-state p { margin: 0 0 var(--space-3); }
+
+/* --- Table: sticky header + striped rows (Section 5) ---
+   Additive rules on the existing .data-table selector -- every
+   template that already uses this class picks these up automatically. */
+table.data-table thead th { position: sticky; top: 0; z-index: 1; }
+table.data-table tbody tr:nth-child(odd) { background: var(--paper); }
+table.data-table tbody tr:nth-child(even) { background: var(--surface); }
+table.data-table tbody tr:hover { background: var(--civic-green-tint); }
+
+/* --- v1.2: filter bar (member-management dashboard, staff members list,
+   Communication Center targeting) — one shared look for every place a
+   Faculty/Department/Level/Gender/Status filter form appears. --- */
+.filter-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.filter-bar .form-row { margin-bottom: 0; }
+.filter-bar .filter-actions { display: flex; gap: var(--space-2); }
+.filter-chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+
+/* --- v1.2: row-level quick actions (staff Members list) --- */
+.row-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+.row-actions .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+.row-action-reserved {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.3rem 0.6rem; font-size: 0.8rem;
+  color: var(--slate); background: var(--surface-soft);
+  border: 1px dashed var(--line); border-radius: var(--radius-sm);
+  cursor: not-allowed; opacity: 0.75;
+}
+
+/* --- v1.2: Communication Center --- */
+.provider-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); margin-bottom: var(--space-6); }
+.provider-card { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-4); background: var(--surface); }
+.provider-card.is-disabled { opacity: 0.6; }
+.provider-card .provider-name { font-weight: 600; margin-bottom: var(--space-1); }
+.provider-card .provider-status { font-size: 0.8rem; color: var(--slate); }
+
+/* --- v1.2: simple pagination nav (staff Members list, announcement history) --- */
+.pagination { display: flex; align-items: center; gap: var(--space-3); margin: var(--space-4) 0; }
+.pagination a { font-weight: 600; }

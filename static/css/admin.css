@@ -1,0 +1,386 @@
+/* =============================================================
+   SAMS -- admin.css  (Version 1.2 "Admin Experience" polish)
+
+   Scope discipline: this file is loaded ONLY on Django admin pages
+   (see templates/admin/base_site.html), on top of Django's own
+   admin CSS. It never touches a template, view, model, form, URL,
+   permission, or migration -- every class here is either:
+     (a) a Django-admin-native selector (fieldset.module, .results
+         table, #changelist-search, .submit-row, ...) restyled, or
+     (b) a new .sams-* class emitted by admin.py `@admin.display`
+         methods that were already free to return format_html().
+
+   Tokens below are the SAME values as static/css/base.css's :root
+   block ("reuse existing... design system"), just re-declared here
+   rather than imported, because admin pages never load base.css --
+   importing it wholesale would drag in .btn/.container/nav rules
+   that collide with Django admin's own class names of the same kind.
+   ============================================================= */
+
+:root {
+  --sams-ink: #16212c;
+  --sams-ink-soft: #3b4754;
+  --sams-paper: #f6f7f5;
+  --sams-surface: #ffffff;
+  --sams-surface-soft: #eef1f0;
+  --sams-civic-green: #1a6b45;
+  --sams-civic-green-deep: #0f4a30;
+  --sams-civic-green-tint: #e8f3ec;
+  --sams-brass: #a9762f;
+  --sams-slate: #5c6670;
+  --sams-line: #dde1e2;
+  --sams-alert: #b23a2e;
+  --sams-alert-tint: #fbeae8;
+  --sams-warning: #8a5a00;
+  --sams-warning-tint: #fdf1dc;
+  --sams-info: #2b5f8a;
+  --sams-info-tint: #e6eef5;
+
+  --sams-radius-sm: 6px;
+  --sams-radius: 10px;
+  --sams-radius-lg: 16px;
+  --sams-radius-full: 999px;
+
+  --sams-shadow-sm: 0 1px 2px rgba(22, 33, 44, 0.06), 0 1px 1px rgba(22, 33, 44, 0.04);
+  --sams-shadow-md: 0 6px 16px -4px rgba(22, 33, 44, 0.12), 0 2px 6px -2px rgba(22, 33, 44, 0.08);
+
+  --sams-transition-fast: 140ms ease;
+  --sams-transition-base: 220ms ease;
+
+  --sams-font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --sams-font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sams-font-record: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #content *, #content *::before, #content *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* -----------------------------------------------------------
+   1. Global chrome -- header, branding, body, links
+   ----------------------------------------------------------- */
+body { font-family: var(--sams-font-body); color: var(--sams-ink); }
+
+#header {
+  background: var(--sams-civic-green-deep);
+  color: #fff;
+  box-shadow: var(--sams-shadow-sm);
+}
+#branding h1, #branding h1 a:link, #branding h1 a:visited { color: #fff; font-family: var(--sams-font-display); }
+#user-tools a { color: rgba(255, 255, 255, 0.85); }
+#user-tools a:hover { color: #fff; }
+
+div.breadcrumbs {
+  background: var(--sams-surface-soft);
+  color: var(--sams-slate);
+  border-bottom: 1px solid var(--sams-line);
+  padding: 10px 40px;
+}
+div.breadcrumbs a { color: var(--sams-civic-green-deep); }
+
+a:link, a:visited { color: var(--sams-civic-green-deep); }
+a:focus, a:hover { color: var(--sams-civic-green); }
+
+/* Visible, consistent focus ring everywhere in #content (Section 11:
+   Accessibility) -- Django admin's own focus styling is inconsistent
+   across widget types, so this is one rule that covers all of them
+   without needing a template change per widget. */
+#content a:focus-visible,
+#content button:focus-visible,
+#content input:focus-visible,
+#content select:focus-visible,
+#content textarea:focus-visible,
+#content [tabindex]:focus-visible {
+  outline: 2px solid var(--sams-civic-green);
+  outline-offset: 2px;
+}
+
+/* -----------------------------------------------------------
+   2. Fieldsets as cards (Section 1: Application Detail Page)
+   Every fieldset.module on every change form gets the card
+   treatment -- not just Member/RegistrationApplication -- since
+   this is a generic selector, not tied to one page.
+   ----------------------------------------------------------- */
+fieldset.module {
+  background: var(--sams-surface);
+  border: 1px solid var(--sams-line);
+  border-radius: var(--sams-radius-lg);
+  box-shadow: var(--sams-shadow-sm);
+  padding: 20px 24px;
+  margin: 0 0 20px;
+  transition: box-shadow var(--sams-transition-base);
+}
+fieldset.module:hover { box-shadow: var(--sams-shadow-md); }
+
+fieldset.module h2 {
+  background: transparent;
+  color: var(--sams-ink);
+  font-family: var(--sams-font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  padding: 0 0 12px;
+  margin: 0 0 16px;
+  border-bottom: 1px solid var(--sams-line);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+fieldset.module h2::before {
+  content: "\25CF"; /* generic dot icon: overridden per-section below */
+  color: var(--sams-civic-green);
+  font-size: 0.7em;
+}
+
+.form-row { padding: 10px 0; border-bottom: 1px dashed var(--sams-line); }
+.form-row:last-child { border-bottom: none; }
+.form-row label { color: var(--sams-ink-soft); font-weight: 600; }
+
+/* Section icons, keyed to fieldset position -- fieldset ORDER is
+   authored explicitly in each ModelAdmin.fieldsets tuple, so
+   nth-of-type is a stable, markup-only way to attach an icon per
+   named section without needing a per-field data attribute. */
+body.model-member fieldset.module:nth-of-type(1) h2::before { content: "\1F9CD"; }   /* Personal Information */
+body.model-member fieldset.module:nth-of-type(2) h2::before { content: "\1F6C2"; }   /* Identity Verification */
+body.model-member fieldset.module:nth-of-type(3) h2::before { content: "\1F393"; }   /* Academic Information */
+body.model-member fieldset.module:nth-of-type(4) h2::before { content: "\1F4CB"; }   /* Registration Status */
+body.model-member fieldset.module:nth-of-type(5) h2::before { content: "\1FAAA"; }   /* Membership Details */
+
+body.model-registrationapplication fieldset.module:nth-of-type(1) h2::before { content: "\1F4C4"; } /* Application Details */
+body.model-registrationapplication fieldset.module:nth-of-type(2) h2::before { content: "\1F4B3"; } /* Payment Information */
+body.model-registrationapplication fieldset.module:nth-of-type(3) h2::before { content: "\2705"; }  /* Registration Status */
+
+/* Responsive layout inside a card (Section 1 "responsive layout") --
+   Django admin's .aligned rows are label-left/input-right by default,
+   which breaks down under ~600px; stack them instead. */
+@media (max-width: 600px) {
+  fieldset.module { padding: 16px; }
+  form .aligned .form-row > div,
+  form .aligned label { width: 100%; float: none; }
+  form .aligned label { margin-bottom: 4px; }
+}
+
+/* -----------------------------------------------------------
+   3. Status badges (Section 2)
+   Emitted by apps/core/admin_badges.py::status_badge() from
+   list_display / readonly detail methods.
+   ----------------------------------------------------------- */
+.sams-badge {
+  display: inline-block;
+  padding: 3px 11px;
+  border-radius: var(--sams-radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.sams-badge--success { background: var(--sams-civic-green-tint); color: var(--sams-civic-green-deep); }
+.sams-badge--warning { background: var(--sams-warning-tint); color: var(--sams-warning); }
+.sams-badge--error   { background: var(--sams-alert-tint); color: var(--sams-alert); }
+.sams-badge--info    { background: var(--sams-info-tint); color: var(--sams-info); }
+.sams-badge--neutral { background: var(--sams-surface-soft); color: var(--sams-ink-soft); }
+
+/* -----------------------------------------------------------
+   4. Dashboard summary cards + Quick Actions (Sections 3 & 4)
+   Used by templates/admin/index.html override.
+   ----------------------------------------------------------- */
+.sams-stat-grid, .sams-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 4px 0 28px;
+}
+
+.sams-stat-card {
+  background: var(--sams-surface);
+  border: 1px solid var(--sams-line);
+  border-radius: var(--sams-radius-lg);
+  box-shadow: var(--sams-shadow-sm);
+  padding: 18px 20px;
+  transition: transform var(--sams-transition-base), box-shadow var(--sams-transition-base);
+}
+.sams-stat-card:hover { transform: translateY(-2px); box-shadow: var(--sams-shadow-md); }
+.sams-stat-card .sams-stat-icon { font-size: 1.4rem; margin-bottom: 8px; }
+.sams-stat-card .sams-stat-value { font-family: var(--sams-font-record); font-size: 1.7rem; font-weight: 700; color: var(--sams-ink); line-height: 1.1; }
+.sams-stat-card .sams-stat-label { font-size: 0.8rem; color: var(--sams-slate); margin-top: 4px; font-weight: 600; }
+.sams-stat-card .sams-stat-desc { font-size: 0.78rem; color: var(--sams-slate); margin-top: 6px; }
+
+.sams-action-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--sams-surface);
+  border: 1px solid var(--sams-line);
+  border-radius: var(--sams-radius);
+  padding: 14px 16px;
+  text-decoration: none !important;
+  color: var(--sams-ink) !important;
+  transition: transform var(--sams-transition-fast), box-shadow var(--sams-transition-fast), border-color var(--sams-transition-fast);
+}
+.sams-action-card:hover { border-color: var(--sams-civic-green); box-shadow: var(--sams-shadow-md); transform: translateY(-1px); }
+.sams-action-card .sams-action-icon {
+  flex: none;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sams-civic-green-tint);
+  border-radius: var(--sams-radius-sm);
+  font-size: 1.1rem;
+}
+.sams-action-card .sams-action-label { font-weight: 600; font-size: 0.9rem; }
+
+.sams-section-title {
+  font-family: var(--sams-font-display);
+  font-size: 1.15rem;
+  margin: 28px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* -----------------------------------------------------------
+   5. Table improvements (Section 5)
+   ----------------------------------------------------------- */
+.results { border-radius: var(--sams-radius); box-shadow: var(--sams-shadow-sm); overflow: auto; }
+#changelist .results table, .results table#result_list {
+  border-collapse: collapse;
+  width: 100%;
+}
+.results table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--sams-surface-soft) !important;
+  color: var(--sams-ink-soft);
+  z-index: 2;
+}
+.results table tbody tr:nth-child(odd) { background: var(--sams-paper); }
+.results table tbody tr:nth-child(even) { background: var(--sams-surface); }
+.results table tbody tr:hover { background: var(--sams-civic-green-tint) !important; }
+.results table tbody tr td, .results table tbody tr th { transition: background var(--sams-transition-fast); }
+.results table tbody tr td a { text-decoration: none; }
+
+/* Clickable-row affordance: Django admin already makes the first cell
+   a link; this just gives the whole row a pointer cursor to match. */
+.results table tbody tr { cursor: pointer; }
+.results table tbody tr input, .results table tbody tr a { cursor: auto; }
+
+/* -----------------------------------------------------------
+   6. Search box (Section 6)
+   ----------------------------------------------------------- */
+#changelist-search #searchbar {
+  border-radius: var(--sams-radius-full);
+  border: 1px solid var(--sams-line);
+  padding: 8px 16px 8px 34px;
+  background: var(--sams-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c6670' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 10px center;
+  transition: border-color var(--sams-transition-fast), box-shadow var(--sams-transition-fast);
+}
+#changelist-search #searchbar:focus {
+  border-color: var(--sams-civic-green);
+  box-shadow: 0 0 0 3px var(--sams-civic-green-tint);
+  outline: none;
+}
+#changelist-search { position: relative; display: inline-flex; align-items: center; }
+.sams-search-clear {
+  position: absolute;
+  right: 96px;
+  border: none;
+  background: transparent;
+  color: var(--sams-slate);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px;
+  display: none;
+}
+.sams-search-clear.is-visible { display: inline-block; }
+
+/* -----------------------------------------------------------
+   7. Empty states (Section 7)
+   ----------------------------------------------------------- */
+.sams-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--sams-surface);
+  border: 1px dashed var(--sams-line);
+  border-radius: var(--sams-radius-lg);
+  color: var(--sams-slate);
+}
+.sams-empty-state .sams-empty-icon {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+  opacity: 0.6;
+}
+.sams-empty-state p { margin: 0 0 16px; }
+.sams-empty-state a.button, .sams-empty-state a.sams-action-card { display: inline-flex; }
+
+/* -----------------------------------------------------------
+   8. Success / alert feedback (Section 8)
+   ----------------------------------------------------------- */
+@keyframes sams-alert-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+ul.messagelist li {
+  border-radius: var(--sams-radius);
+  box-shadow: var(--sams-shadow-sm);
+  animation: sams-alert-in var(--sams-transition-base);
+  border-left: 4px solid var(--sams-civic-green);
+}
+ul.messagelist li.success { border-left-color: var(--sams-civic-green); }
+ul.messagelist li.warning { border-left-color: var(--sams-warning); }
+ul.messagelist li.error { border-left-color: var(--sams-alert); }
+
+/* -----------------------------------------------------------
+   9. Loading state on submit-row buttons (Section 9)
+   .sams-is-loading is toggled by static/js/admin-polish.js.
+   Native form submission is never intercepted -- see that file.
+   ----------------------------------------------------------- */
+.submit-row input.sams-is-loading, button.sams-is-loading {
+  color: transparent !important;
+  pointer-events: none;
+  position: relative;
+}
+.submit-row input.sams-is-loading::after, button.sams-is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: sams-spin 0.6s linear infinite;
+}
+@keyframes sams-spin { to { transform: rotate(360deg); } }
+
+/* -----------------------------------------------------------
+   10. Buttons -- rounding/hover to match the site's button feel
+   ----------------------------------------------------------- */
+.button, input[type="submit"], input[type="button"], .submit-row input, a.button {
+  border-radius: var(--sams-radius-sm) !important;
+  transition: transform var(--sams-transition-fast), box-shadow var(--sams-transition-fast) !important;
+}
+.button:hover, input[type="submit"]:hover, .submit-row input:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sams-shadow-sm);
+}
+.button:disabled, input:disabled { transform: none; box-shadow: none; }
+.default, input[type="submit"].default {
+  background: var(--sams-civic-green-deep);
+}
+.default:hover, input[type="submit"].default:hover { background: var(--sams-civic-green); }
+
+/* -----------------------------------------------------------
+   11. Mobile admin (Section 10)
+   ----------------------------------------------------------- */
+@media (max-width: 768px) {
+  .sams-stat-grid, .sams-action-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sams-stat-card { padding: 14px; }
+  .sams-stat-card .sams-stat-value { font-size: 1.35rem; }
+  fieldset.module { padding: 14px; }
+  #changelist-search { display: flex; width: 100%; }
+  #changelist-search #searchbar { width: 100%; }
+}
+@media (max-width: 480px) {
+  .sams-stat-grid, .sams-action-grid { grid-template-columns: 1fr; }
+}

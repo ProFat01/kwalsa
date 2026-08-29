@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Elections{% endblock %}
+{% block meta_description %}Browse upcoming, active, and completed elections and view results.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Elections</h1>
+
+{% if not elections %}
+  <p>There are no elections to show yet.</p>
+{% endif %}
+
+{% for election in elections %}
+  <div class="election-card">
+    <span class="badge badge-{{ election.status }}">{{ election.status }}</span>
+    <h2><a href="{% url 'elections:election_detail' election.pk %}">{{ election.name }}</a></h2>
+    <p class="meta">
+      <time datetime="{{ election.start_datetime|date:'c' }}">{{ election.start_datetime|date:"d M Y, H:i" }}</time>
+      &ndash;
+      <time datetime="{{ election.end_datetime|date:'c' }}">{{ election.end_datetime|date:"d M Y, H:i" }}</time>
+    </p>
+    <div class="actions">
+      <a href="{% url 'elections:election_detail' election.pk %}">View details</a>
+      {% if election.status == "active" %}
+        <a href="{% url 'elections:voting_login' election.pk %}" class="btn">Vote now</a>
+        {# ISSUE 4 FIX: live results available during active elections #}
+        <a href="{% url 'elections:results' election.pk %}">Live results</a>
+      {% endif %}
+      {% if election.status == "closed" %}
+        <a href="{% url 'elections:results' election.pk %}">View results</a>
+      {% endif %}
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Membership Analytics{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Membership Analytics</h1>
+{% include "analytics/_nav.html" %}
+
+{% if not association %}
+  <p>No association is configured yet.</p>
+{% else %}
+  <div class="summary-stats">
+    <div class="summary-stat"><div class="value">{{ membership.total_members }}</div><div class="label">Total Members</div></div>
+    <div class="summary-stat"><div class="value">{{ membership.total_undergraduate }} ({{ membership.undergraduate_percentage }}%)</div><div class="label">Undergraduates</div></div>
+    <div class="summary-stat"><div class="value">{{ membership.total_alumni }} ({{ membership.alumni_percentage }}%)</div><div class="label">Alumni</div></div>
+  </div>
+
+  <table class="data-table">
+    <thead><tr><th>Status</th><th>Count</th><th>Percentage</th></tr></thead>
+    <tbody>
+      <tr><td>Approved</td><td>{{ membership.total_approved }}</td><td>{{ membership.approved_percentage }}%</td></tr>
+      <tr><td>Pending</td><td>{{ membership.total_pending }}</td><td>{{ membership.pending_percentage }}%</td></tr>
+      <tr><td>Rejected</td><td>{{ membership.total_rejected }}</td><td>{{ membership.rejected_percentage }}%</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Registration Growth</h2>
+  <p class="sort-links">
+    Group by:
+    <a href="?granularity=day" class="{% if granularity == 'day' %}current{% endif %}">Day</a>
+    <a href="?granularity=month" class="{% if granularity == 'month' %}current{% endif %}">Month</a>
+    <a href="?granularity=year" class="{% if granularity == 'year' %}current{% endif %}">Year</a>
+  </p>
+  {% if growth %}
+    <table class="data-table">
+      <thead><tr><th>Period</th><th>Registrations</th></tr></thead>
+      <tbody>
+        {% for row in growth %}
+          <tr><td>{{ row.label }}</td><td>{{ row.count }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No registrations yet.</p>
+  {% endif %}
+{% endif %}
+</div>
+{% endblock %}

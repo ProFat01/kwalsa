@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — {{ election.name }}{% endblock %}
+
+{% block content %}
+<h1>Election Dashboard: {{ election.name }}</h1>
+<span class="badge badge-{{ election.status }}">{{ election.status }}</span>
+<p class="meta">{{ election.association }}</p>
+
+<div class="summary-stats">
+  <div class="summary-stat">
+    <div class="value">{{ eligible_voters_count }}</div>
+    <div class="label">Total Eligible Voters</div>
+  </div>
+  <div class="summary-stat">
+    <div class="value">{{ voters_count }}</div>
+    <div class="label">Total Votes Cast</div>
+  </div>
+  <div class="summary-stat">
+    <div class="value">{{ turnout_percentage }}%</div>
+    <div class="label">Participation</div>
+  </div>
+</div>
+
+<h2>Votes per position / candidate</h2>
+{% for item in results %}
+  <table class="data-table">
+    <thead>
+      <tr><th colspan="3">{{ item.position.title }} &mdash; {{ item.total_votes }} vote(s)</th></tr>
+      <tr><th>Candidate</th><th>Votes</th><th>Percentage</th></tr>
+    </thead>
+    <tbody>
+      {% for row in item.candidates %}
+        <tr>
+          <td>{{ row.candidate.name }}</td>
+          <td>{{ row.vote_count }}</td>
+          <td>{{ row.percentage }}%</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3">No candidates for this position.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
+
+<p><a href="{% url 'elections:results' election.pk %}">View public results page</a></p>
+{% endblock %}

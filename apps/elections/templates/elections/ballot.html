@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Ballot — {{ election.name }}{% endblock %}
+{% block meta_description %}Cast your vote in {{ election.name }}.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>{{ election.name }}</h1>
+<p class="meta">Voting as {{ member.full_name }} (<span class="record">{{ member.membership_id }}</span>)</p>
+
+{% if form.non_field_errors %}
+  <div class="alert alert-error" role="alert">
+    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+  </div>
+{% endif %}
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% for item in ballot_positions %}
+    <fieldset class="position-block">
+      <legend><h2 class="u-inline">{{ item.position.title }}</h2></legend>
+      {% for error in item.field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+
+      {% for candidate in item.candidates %}
+        <label class="candidate-option">
+          <input
+            type="radio"
+            name="{{ item.field.html_name }}"
+            value="{{ candidate.pk }}"
+            required
+            {% if item.field.value|stringformat:"s" == candidate.pk|stringformat:"s" %}checked{% endif %}
+          >
+          {% if candidate.photo %}
+            <img src="{{ candidate.photo.url }}" alt="" class="candidate-option-photo">
+          {% endif %}
+          <span class="u-strong">{{ candidate.name }}</span>
+          {% if candidate.manifesto %}<p class="manifesto">{{ candidate.manifesto }}</p>{% endif %}
+        </label>
+      {% endfor %}
+    </fieldset>
+  {% endfor %}
+
+  <button type="submit" class="btn">Submit Vote</button>
+</form>
+</div>
+{% endblock %}

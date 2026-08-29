@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Compose Announcement{% endblock %}
+{% block meta_description %}Compose and send an announcement to members.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Compose Announcement</h1>
+<p class="meta"><a href="{% url 'accounts:communication_center' %}">&larr; Back to Communication Center</a></p>
+
+{% if not association %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#127963;&#65039;</div>
+    <p>No association is configured yet.</p>
+  </div>
+{% else %}
+
+<form method="post" novalidate id="compose-form">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-error" role="alert"><p>{{ form.non_field_errors.0 }}</p></div>
+  {% endif %}
+
+  <div class="form-row" data-field="subject">
+    <label for="{{ form.subject.id_for_label }}">Subject</label>
+    {{ form.subject }}
+    {% if form.subject.errors %}<p class="field-error" role="alert">{{ form.subject.errors.0 }}</p>{% endif %}
+  </div>
+
+  <div class="form-row" data-field="message">
+    <label for="{{ form.message.id_for_label }}">Message</label>
+    {{ form.message }}
+    {% if form.message.errors %}<p class="field-error" role="alert">{{ form.message.errors.0 }}</p>{% endif %}
+  </div>
+
+  <h2>Recipients</h2>
+  <div class="form-row" data-field="recipient_type">
+    <label for="{{ form.recipient_type.id_for_label }}">Send To</label>
+    {{ form.recipient_type }}
+  </div>
+
+  <div class="filter-bar" aria-label="Recipient targeting">
+    <div class="form-row" data-field="faculty">
+      <label for="{{ form.faculty.id_for_label }}">Faculty (if targeting Faculty or Custom Filter)</label>
+      {{ form.faculty }}
+    </div>
+    <div class="form-row" data-field="department">
+      <label for="{{ form.department.id_for_label }}">Department (if targeting Department or Custom Filter)</label>
+      {{ form.department }}
+    </div>
+    <div class="form-row" data-field="level">
+      <label for="{{ form.level.id_for_label }}">Level (if targeting Level or Custom Filter)</label>
+      {{ form.level }}
+    </div>
+    <div class="form-row" data-field="gender">
+      <label for="{{ form.gender.id_for_label }}">Gender (if targeting Gender or Custom Filter)</label>
+      {{ form.gender }}
+    </div>
+    <div class="form-row" data-field="approval_status">
+      <label for="{{ form.approval_status.id_for_label }}">Approval Status (for Custom Filter)</label>
+      {{ form.approval_status }}
+    </div>
+  </div>
+  {% if form.selected_member_ids.value %}
+    <p class="chip">Selected members: {{ form.selected_member_ids.value }}</p>
+  {% endif %}
+  {{ form.selected_member_ids }}
+  {% if form.non_field_errors and "member" in form.non_field_errors.0 %}
+    <p class="field-error" role="alert">{{ form.non_field_errors.0 }}</p>
+  {% endif %}
+
+  <h2>Delivery Method</h2>
+  <div class="provider-grid">
+    {% for value, label in form.delivery_method.field.choices %}
+      <label class="provider-card {% if value != 'email' %}is-disabled{% endif %}">
+        <input type="radio" name="delivery_method" value="{{ value }}" {% if value == "email" %}checked{% else %}disabled{% endif %}>
+        <span class="provider-name">{{ label }}</span>
+      </label>
+    {% endfor %}
+  </div>
+  {% if form.delivery_method.errors %}<p class="field-error" role="alert">{{ form.delivery_method.errors.0 }}</p>{% endif %}
+
+  <div class="row-actions u-mt-4">
+    <button type="submit" name="action" value="preview" class="btn btn-outline">Preview Recipients</button>
+    <button type="submit" name="action" value="send" class="btn">Send Announcement</button>
+  </div>
+</form>
+
+{% if preview %}
+  <section class="content-block u-mt-4">
+    <h2>Preview</h2>
+    <p><strong class="record">{{ preview.count }}</strong> member(s) match this targeting.</p>
+    {% if preview.sample %}
+      <ul>
+        {% for member in preview.sample %}
+          <li>{{ member.full_name }} {% if member.email %}({{ member.email }}){% else %}<span class="chip">no email on file</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% if preview.count > preview.sample|length %}<p class="meta">…and {{ preview.count|add:"-5" }} more.</p>{% endif %}
+    {% else %}
+      <p>No members match this targeting.</p>
+    {% endif %}
+  </section>
+{% endif %}
+
+{% endif %}
+</div>
+{% endblock %}

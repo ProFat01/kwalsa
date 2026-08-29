@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Member Verification{% endblock %}
+{% block meta_description %}Verify a SAMS membership card.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/card.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container section">
+<div class="verify-result">
+  {% if is_valid %}
+    <span class="verify-badge verify-badge-valid">✓ Valid Member</span>
+    <div class="profile-card" style="text-align: left;">
+      {% if member.passport_photo %}
+        <img src="{{ member.passport_photo.url }}" alt="{{ member.full_name }}" class="profile-card-photo">
+      {% else %}
+        <div class="profile-card-photo profile-card-photo-placeholder" aria-hidden="true">{{ member.full_name|first|upper }}</div>
+      {% endif %}
+      <div class="profile-card-body">
+        <h2>{{ member.full_name }}</h2>
+        <p class="record u-text-muted">{{ member.membership_id }}</p>
+        <p class="meta">{{ member.association.name }}</p>
+      </div>
+    </div>
+  {% else %}
+    <span class="verify-badge verify-badge-invalid">Invalid Membership</span>
+    <p class="meta">This card could not be verified. It may be expired, unapproved, or the code is incorrect.</p>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

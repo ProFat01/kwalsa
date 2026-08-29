@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+{% block og_title %}{{ association.name|default:"SAMS" }} — Home{% endblock %}
+{% block meta_description %}{% if site_settings.welcome_message %}{{ site_settings.welcome_message|truncatewords:30 }}{% else %}Membership registration, elections, and live results for {{ association.name|default:"Malam Sidi Students Association" }}.{% endif %}{% endblock %}
+{% block extra_js %}<script src="{% static 'js/home.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+
+{% if not association %}
+  <div class="container section">
+    <div class="alert alert-info"><p>The site isn't fully configured yet — an administrator needs to set up the Association record.</p></div>
+  </div>
+{% else %}
+
+{% with active_election=elections.active.0 %}
+
+<!-- SECTION 1: Hero -->
+<section class="hero"{% if site_settings.hero_image %} data-hero-bg="{{ site_settings.hero_image.url }}"{% endif %}>
+  <div class="container hero-grid">
+    <div>
+      <p class="hero-eyebrow">Student Association Management System</p>
+      <h1>{{ association.name }}</h1>
+      {% if site_settings.motto %}<p class="motto">&ldquo;{{ site_settings.motto }}&rdquo;</p>{% endif %}
+      <p class="welcome">
+        {% if site_settings.welcome_message %}{{ site_settings.welcome_message }}{% else %}
+          Welcome to {{ association.name }}. Register for membership, follow elections, and check live results — all in one place.
+        {% endif %}
+      </p>
+      <div class="btn-group u-mt-3">
+        <a href="{% url 'members:register' %}" class="btn">Register Now</a>
+        <a href="{% url 'members:status_check' %}" class="btn btn-on-dark">Check Status</a>
+        {% if active_election %}
+          <a href="{% url 'elections:voting_login' active_election.pk %}" class="btn btn-outline-on-dark">Vote Now</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div aria-hidden="true">
+      <div class="member-card">
+        <div class="member-card-seal">
+          {% if association.logo %}
+            <img src="{{ association.logo.url }}" alt="" class="member-card-seal-logo">
+          {% else %}
+            {{ association.short_name|slice:":1" }}
+          {% endif %}
+        </div>
+        <p class="member-card-label">Membership Record</p>
+        <p class="member-card-id record">{{ association.short_name }}-{% now "Y" %}-0001</p>
+        <div class="member-card-rule"></div>
+        <div class="member-card-foot">
+          <span>{{ association.short_name }}</span>
+          <span>Approved Member</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: Live Statistics -->
+{% if membership %}
+<div class="container stats-overlap">
+  <h2 class="visually-hidden">Association statistics</h2>
+  <div class="summary-stats">
+    <div class="summary-stat">
+      <div class="value record u-countup">{{ membership.total_members }}</div>
+      <div class="label">Total Registered Members</div>
+    </div>
+    <div class="summary-stat">
+      <div class="value record u-countup">{{ membership.total_undergraduate }}</div>
+      <div class="label">Total Undergraduates</div>
+    </div>
+    <div class="summary-stat">
+      <div class="value record u-countup">{{ membership.total_alumni }}</div>
+      <div class="label">Total Alumni</div>
+    </div>
+    <div class="summary-stat">
+      {% if active_election %}
+        <div class="value"><span class="badge badge-active">Active</span></div>
+      {% else %}
+        <div class="value"><span class="badge badge-closed">None</span></div>
+      {% endif %}
+      <div class="label">Election Status</div>
+    </div>
+    {% if active_election %}
+      <div class="summary-stat">
+        <div class="value record u-countup">{{ active_election.voters_count }}</div>
+        <div class="label">Total Votes Cast</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- SECTION 3: About -->
+<section class="section">
+  <div class="container">
+    <h2>About {{ association.short_name }}</h2>
+    <div class="about-grid">
+      <div>
+        <h3>Our History</h3>
+        <p>{{ site_settings.about_text|default:"Our history will be added here soon." }}</p>
+      </div>
+      <div>
+        <h3>Our Mission</h3>
+        <p>{{ site_settings.mission|default:"Our mission will be added here soon." }}</p>
+      </div>
+      <div>
+        <h3>Our Vision</h3>
+        <p>{{ site_settings.vision|default:"Our vision will be added here soon." }}</p>
+      </div>
+    </div>
+    <p class="u-mt-3"><a href="{% url 'core:about' %}">Read more about us &rarr;</a></p>
+  </div>
+</section>
+
+<!-- SECTION 4: Why Join -->
+<section class="section section--alt">
+  <div class="container">
+    <h2>Why Join {{ association.short_name }}?</h2>
+    <div class="u-grid u-grid-3 u-mt-3">
+      <div class="benefit-card">
+        <div class="benefit-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/></svg>
+        </div>
+        <h3>Participate in Elections</h3>
+        <p>Vote for the leaders who represent your interests, and stand for office yourself when the time comes.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5M15 20c0-2 1.5-4 4-4s4 1.5 4 4"/></svg>
+        </div>
+        <h3>Build a Professional Network</h3>
+        <p>Connect with fellow students and alumni who share your field of study and career interests.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.6 5.6L21 8.3l-4.5 4.1L17.6 19 12 15.8 6.4 19l1.1-6.6L3 8.3l6.4-.7z"/></svg>
+        </div>
+        <h3>Alumni Recognition</h3>
+        <p>Your membership record and contributions stay part of the association's history long after graduation.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+        </div>
+        <h3>Attend Events</h3>
+        <p>Get first access to association events, workshops, and gatherings throughout the academic year.</p>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-card-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 4.5v6c0 5-3.8 8.7-9 9.5-5.2-.8-9-4.5-9-9.5v-6L12 2z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <h3>Leadership Opportunities</h3>
+        <p>Contest for executive positions and gain real leadership experience representing your peers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: Active Election Spotlight -->
+<section class="section">
+  <div class="container">
+    <h2>Election Spotlight</h2>
+    {% if active_election %}
+      <div class="spotlight-card">
+        <div class="spotlight-header">
+          <div>
+            <h3>{{ active_election.name }}</h3>
+            <p class="spotlight-meta">
+              Voting period:
+              <time datetime="{{ active_election.start_datetime|date:'c' }}">{{ active_election.start_datetime|date:"d M Y, H:i" }}</time>
+              &ndash;
+              <time datetime="{{ active_election.end_datetime|date:'c' }}">{{ active_election.end_datetime|date:"d M Y, H:i" }}</time>
+            </p>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+
+        <div class="countdown" data-countdown-until="{{ active_election.end_datetime|date:'c' }}">
+          <div class="countdown-unit"><span class="value" data-cd-days>&mdash;</span><span class="label">Days</span></div>
+          <div class="countdown-unit"><span class="value" data-cd-hours>&mdash;</span><span class="label">Hours</span></div>
+          <div class="countdown-unit"><span class="value" data-cd-minutes>&mdash;</span><span class="label">Minutes</span></div>
+          <div class="countdown-unit"><span class="value" data-cd-seconds>&mdash;</span><span class="label">Seconds</span></div>
+        </div>
+
+        <div class="btn-group">
+          <a href="{% url 'elections:voting_login' active_election.pk %}" class="btn">Vote Now</a>
+          <a href="{% url 'elections:results' active_election.pk %}" class="btn btn-outline">Live Results</a>
+        </div>
+      </div>
+    {% else %}
+      <p class="no-election-notice">No election is currently active.</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- SECTION 6: Live Results Preview -->
+{% if active_election %}
+  {% with first_position_results=active_election.results_by_position.0 %}
+  {% if first_position_results and first_position_results.candidates %}
+  <section class="section section--alt">
+    <div class="container">
+      <h2>Live Results Preview &mdash; {{ first_position_results.position.title }}</h2>
+      <p class="meta u-mb-3">{{ first_position_results.total_votes }} vote{{ first_position_results.total_votes|pluralize }} counted so far for this position. Voting is still open — these numbers will keep changing.</p>
+
+      <div class="pie-chart-wrap u-mb-3">
+        <div class="pie-chart" role="img" aria-label="Vote share by candidate for {{ first_position_results.position.title }}"></div>
+        <ul class="pie-chart-legend">
+          {% for row in first_position_results.candidates %}
+            <li data-percentage="{{ row.percentage }}">
+              <span class="pie-chart-swatch" aria-hidden="true"></span>
+              {{ row.candidate.name }} &mdash; {{ row.percentage }}%
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <ol class="results-preview-list">
+        {% for row in first_position_results.candidates %}
+          <li class="results-preview-row">
+            <div class="row-top">
+              <span class="candidate-name">{{ row.candidate.name }}</span>
+              <span class="vote-count record">{{ row.vote_count }} vote{{ row.vote_count|pluralize }} &middot; {{ row.percentage }}%</span>
+            </div>
+            <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+          </li>
+        {% endfor %}
+      </ol>
+
+      <a href="{% url 'elections:results' active_election.pk %}" class="btn">View Full Results</a>
+    </div>
+  </section>
+  {% endif %}
+  {% endwith %}
+{% endif %}
+
+<!-- Elections overview (all statuses) -->
+{% if elections %}
+<section class="section">
+  <div class="container">
+    <h2>All Elections</h2>
+    <div class="status-columns">
+      <div class="status-column">
+        <h3><span class="badge badge-upcoming">Upcoming</span></h3>
+        {% for election in elections.upcoming %}
+          <div class="election-card">
+            <h3><a href="{% url 'elections:election_detail' election.pk %}">{{ election.name }}</a></h3>
+            <p class="meta">Opens {{ election.start_datetime|date:"d M Y, H:i" }}</p>
+          </div>
+        {% empty %}
+          <p class="meta">No upcoming elections right now.</p>
+        {% endfor %}
+      </div>
+
+      <div class="status-column">
+        <h3><span class="badge badge-active">Active</span></h3>
+        {% for election in elections.active %}
+          <div class="election-card">
+            <h3><a href="{% url 'elections:election_detail' election.pk %}">{{ election.name }}</a></h3>
+            <p class="meta">Closes {{ election.end_datetime|date:"d M Y, H:i" }}</p>
+            <div class="actions">
+              <a href="{% url 'elections:voting_login' election.pk %}" class="btn">Vote Now</a>
+              <a href="{% url 'elections:results' election.pk %}">Live Results</a>
+            </div>
+          </div>
+        {% empty %}
+          <p class="meta">No elections are open for voting right now.</p>
+        {% endfor %}
+      </div>
+
+      <div class="status-column">
+        <h3><span class="badge badge-closed">Recently Completed</span></h3>
+        {% for election in elections.recently_completed %}
+          <div class="election-card">
+            <h3><a href="{% url 'elections:results' election.pk %}">{{ election.name }}</a></h3>
+            <p class="meta">Closed {{ election.end_datetime|date:"d M Y" }}</p>
+            <div class="actions"><a href="{% url 'elections:results' election.pk %}">View results</a></div>
+          </div>
+        {% empty %}
+          <p class="meta">No elections have concluded yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- SECTION 7: Donation -->
+{% if site_settings.donation_details %}
+<section class="section section--alt" id="donate">
+  <div class="container">
+    <h2>Support {{ association.short_name }}</h2>
+    <div class="info-card u-max-34">
+      <p class="u-pre-line u-strong u-m-0">{{ site_settings.donation_details }}</p>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- SECTION 8: Contact -->
+<section class="section" id="contact">
+  <div class="container">
+    <h2>Contact Us</h2>
+    <div class="contact-grid">
+      <div>
+        <h3>Details</h3>
+        <dl>
+          {% if site_settings.contact_email %}
+            <div class="contact-detail"><dt>Email</dt><dd><a href="mailto:{{ site_settings.contact_email }}">{{ site_settings.contact_email }}</a></dd></div>
+          {% endif %}
+          {% if site_settings.contact_phone %}
+            <div class="contact-detail"><dt>Phone</dt><dd>{{ site_settings.contact_phone }}</dd></div>
+          {% endif %}
+          {% if site_settings.address %}
+            <div class="contact-detail"><dt>Address</dt><dd>{{ site_settings.address }}</dd></div>
+          {% endif %}
+        </dl>
+        {% if not site_settings.contact_email and not site_settings.contact_phone and not site_settings.address %}
+          <p class="meta">Contact details haven't been added yet — use the form to reach us.</p>
+        {% endif %}
+      </div>
+      <div>
+        <h3>Send a Message</h3>
+        <form method="post" action="{% url 'core:contact' %}" novalidate>
+          {% csrf_token %}
+          {% for field in contact_form %}
+            <div class="form-row">
+              <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+              {{ field }}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section cta-section">
+  <div class="container">
+    <h2>Get Involved</h2>
+    <p>Membership keeps {{ association.short_name }} running, and elections decide who leads it. Both start here.</p>
+    <div class="btn-group u-justify-center">
+      <a href="{% url 'members:register' %}" class="btn">Become A Member</a>
+      <a href="{% url 'elections:election_list' %}" class="btn btn-on-dark">Participate In Elections</a>
+    </div>
+  </div>
+</section>
+
+{% endwith %}
+{% endif %}
+{% endblock %}

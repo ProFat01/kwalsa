@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block meta_description %}Staff dashboard.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Dashboard</h1>
+<p class="meta">
+  Signed in as {{ user.get_full_name|default:user.username }}
+  {% if user.role_names %}&mdash; {{ user.role_names|join:", " }}{% elif user.is_superuser %}&mdash; Superuser{% endif %}
+</p>
+
+{% if not sections.registration and not sections.elections and not sections.analytics and not sections.contact %}
+  <div class="alert alert-info">
+    <p>Your account doesn't have access to any dashboard section yet. Contact a Super Admin if you believe this is incorrect.</p>
+  </div>
+{% endif %}
+
+{% if not association %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#127963;&#65039;</div>
+    <p>No association is configured yet — an administrator needs to set one up.</p>
+  </div>
+{% endif %}
+
+{% if association %}
+
+{% if sections.registration or sections.elections or sections.analytics or sections.contact %}
+<section class="content-block">
+  <div class="section-heading"><span class="section-heading-icon" aria-hidden="true">&#9889;</span><h2>Quick Actions</h2></div>
+  <div class="quick-actions-grid">
+    {% if sections.registration %}
+      <a class="quick-action-card" href="{% url 'admin:members_registrationapplication_changelist' %}?status__exact=pending">
+        <span class="quick-action-icon" aria-hidden="true">&#9989;</span>
+        <span class="quick-action-label">Approve Applications</span>
+      </a>
+      <a class="quick-action-card" href="{% url 'admin:members_member_changelist' %}">
+        <span class="quick-action-icon" aria-hidden="true">&#128101;</span>
+        <span class="quick-action-label">View Members</span>
+      </a>
+    {% endif %}
+    {% if sections.elections %}
+      <a class="quick-action-card" href="{% url 'admin:elections_election_add' %}">
+        <span class="quick-action-icon" aria-hidden="true">&#128499;&#65039;</span>
+        <span class="quick-action-label">Create Election</span>
+      </a>
+    {% endif %}
+    {% if sections.analytics %}
+      <a class="quick-action-card" href="{% url 'analytics:overview' %}">
+        <span class="quick-action-icon" aria-hidden="true">&#128202;</span>
+        <span class="quick-action-label">Analytics</span>
+      </a>
+    {% endif %}
+    {% if sections.contact %}
+      <a class="quick-action-card" href="{% url 'admin:core_contactmessage_changelist' %}">
+        <span class="quick-action-icon" aria-hidden="true">&#128172;</span>
+        <span class="quick-action-label">Messages</span>
+      </a>
+      <a class="quick-action-card" href="{% url 'admin:core_sitesettings_changelist' %}">
+        <span class="quick-action-icon" aria-hidden="true">&#9881;&#65039;</span>
+        <span class="quick-action-label">Site Settings</span>
+      </a>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if sections.registration %}
+<section class="content-block">
+  <div class="section-heading"><span class="section-heading-icon" aria-hidden="true">&#128203;</span><h2>Registration</h2></div>
+  <div class="summary-stats">
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#128101;</div>
+      <div class="value record">{{ membership.total_members }}</div>
+      <div class="label">Total Members</div>
+      <div class="summary-stat-desc">Registered members on file</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#8987;</div>
+      <div class="value record">{{ membership.total_pending }}</div>
+      <div class="label">Pending Applications</div>
+      <div class="summary-stat-desc">Awaiting a review decision</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#9989;</div>
+      <div class="value record">{{ membership.total_approved }}</div>
+      <div class="label">Approved</div>
+      <div class="summary-stat-desc">Active, approved members</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#10060;</div>
+      <div class="value record">{{ membership.total_rejected }}</div>
+      <div class="label">Rejected</div>
+      <div class="summary-stat-desc">Applications not approved</div>
+    </div>
+  </div>
+
+  {% if pending_applications %}
+    <table class="data-table">
+      <thead><tr><th>Application</th><th>Applicant</th><th>Submitted</th><th></th></tr></thead>
+      <tbody>
+        {% for application in pending_applications %}
+          <tr>
+            <td class="record">{{ application.application_number }}</td>
+            <td>{{ application.member.full_name }}</td>
+            <td>{{ application.submitted_at|date:"d M Y" }}</td>
+            <td><a href="{% url 'admin:members_registrationapplication_change' application.pk %}">Review &rarr;</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon" aria-hidden="true">&#128203;</div>
+      <p>No pending applications right now.</p>
+    </div>
+  {% endif %}
+  <p><a href="{% url 'admin:members_registrationapplication_changelist' %}" class="btn">View All Applications</a></p>
+</section>
+{% endif %}
+
+{% if sections.elections %}
+<section class="content-block">
+  <div class="section-heading"><span class="section-heading-icon" aria-hidden="true">&#128499;&#65039;</span><h2>Elections</h2></div>
+  {% if election_overviews %}
+    <table class="data-table">
+      <thead><tr><th>Election</th><th>Status</th><th>Eligible</th><th>Votes Cast</th><th>Turnout</th><th></th></tr></thead>
+      <tbody>
+        {% for item in election_overviews %}
+          <tr>
+            <td>{{ item.election.name }}</td>
+            <td><span class="badge badge-{{ item.election.status }}">{{ item.election.status }}</span></td>
+            <td class="record">{{ item.eligible_voters }}</td>
+            <td class="record">{{ item.votes_cast }}</td>
+            <td class="record">{{ item.turnout_percentage }}%</td>
+            <td><a href="{% url 'elections:admin_dashboard' item.election.pk %}">Manage &rarr;</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon" aria-hidden="true">&#128499;&#65039;</div>
+      <p>No elections created yet.</p>
+      <a href="{% url 'admin:elections_election_add' %}" class="btn">Create Election</a>
+    </div>
+  {% endif %}
+  <p><a href="{% url 'admin:elections_election_changelist' %}" class="btn">Manage Elections</a></p>
+</section>
+{% endif %}
+
+{% if sections.analytics %}
+<section class="content-block">
+  <div class="section-heading"><span class="section-heading-icon" aria-hidden="true">&#128202;</span><h2>Analytics</h2></div>
+  <div class="summary-stats">
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#128101;</div>
+      <div class="value record">{{ analytics_summary.total_members }}</div>
+      <div class="label">Total Members</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#127891;</div>
+      <div class="value record">{{ analytics_summary.total_undergraduate }}</div>
+      <div class="label">Undergraduates</div>
+    </div>
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#127891;</div>
+      <div class="value record">{{ analytics_summary.total_alumni }}</div>
+      <div class="label">Alumni</div>
+    </div>
+  </div>
+  <p>
+    <a href="{% url 'analytics:overview' %}" class="btn">Open Analytics Dashboard</a>
+    {% if perms.analytics.view_visitor_analytics %}
+      <a href="{% url 'analytics:visitor_analytics_dashboard' %}" class="btn">Visitor Analytics</a>
+    {% endif %}
+  </p>
+</section>
+{% endif %}
+
+{% if sections.contact %}
+<section class="content-block">
+  <div class="section-heading"><span class="section-heading-icon" aria-hidden="true">&#128172;</span><h2>Contact Messages</h2></div>
+  <div class="summary-stats">
+    <div class="summary-stat">
+      <div class="summary-stat-icon" aria-hidden="true">&#128233;</div>
+      <div class="value record">{{ unread_contact_count }}</div>
+      <div class="label">Unread Messages</div>
+    </div>
+  </div>
+  {% if recent_contact_messages %}
+    <table class="data-table">
+      <thead><tr><th>From</th><th>Subject</th><th>Received</th><th></th></tr></thead>
+      <tbody>
+        {% for message in recent_contact_messages %}
+          <tr>
+            <td>{{ message.name }}{% if not message.is_read %} <span class="badge badge-active">New</span>{% endif %}</td>
+            <td>{{ message.subject }}</td>
+            <td>{{ message.submitted_at|date:"d M Y" }}</td>
+            <td><a href="{% url 'admin:core_contactmessage_change' message.pk %}">View &rarr;</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-icon" aria-hidden="true">&#128172;</div>
+      <p>No messages yet.</p>
+    </div>
+  {% endif %}
+  <p><a href="{% url 'admin:core_contactmessage_changelist' %}" class="btn">View All Messages</a></p>
+</section>
+{% endif %}
+
+{% endif %}
+
+<p class="meta"><a href="{% url 'admin:index' %}">Open full admin site &rarr;</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+# Student Association Management System (SAMS)
+# Requires Python 3.12+ (Django 6.0 dropped support for 3.10/3.11)
+#
+# Exact versions pinned (not wildcards) for production reproducibility —
+# a clean `pip install -r requirements.txt` today and one a year from now
+# should resolve identically. Verified together in a clean venv before
+# being pinned here; re-verify (`pip install -r requirements.txt` in a
+# fresh venv, then run the full test suite) before bumping any of these.
+
+Django==6.0.6
+django-environ==0.11.2          # clean env-var based settings -> trivial Postgres swap later
+Pillow==11.3.0                  # required for ImageField (passport_photo, receipts, candidate photo) and QR code image rendering
+qrcode==8.2                      # offline QR generation for the membership card verification code (uses Pillow above, no native deps, no network calls)
+whitenoise==6.12.0               # static file serving on PythonAnywhere without a separate web server config
+mailjet-rest==1.3.4               # Mailjet Email API client (HTTPS, not SMTP) — see apps/core/mailjet_service.py;
+                                   # PythonAnywhere Free blocks outbound SMTP but allows HTTPS, hence this over django's SMTP backend
+
+# --- uncomment when you move off SQLite (see PRODUCTION_DEPLOYMENT.md "SQLite limitations") ---
+# psycopg[binary]==3.*          # PostgreSQL driver
+
+# --- dev/test tooling (optional, recommended) ---
+# django-debug-toolbar==5.*
+# pytest-django==4.*

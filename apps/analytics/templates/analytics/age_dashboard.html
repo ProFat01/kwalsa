@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Age Analytics{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Age Analytics</h1>
+{% include "analytics/_nav.html" %}
+
+{% if rows %}
+  <table class="data-table">
+    <thead><tr><th>Age Group</th><th>Members</th><th>Percentage</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td>{{ row.count }}</td>
+          <td>
+            {{ row.percentage }}%
+            <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No age data yet.</p>
+{% endif %}
+</div>
+{% endblock %}

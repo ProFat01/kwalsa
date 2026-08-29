@@ -1,0 +1,35 @@
+Welcome to {{ association.name }}
+================================================
+
+Dear {{ member.full_name }},
+
+We are pleased to inform you that your application to join the
+{{ association.name }} has been reviewed and officially approved.
+
+YOUR MEMBERSHIP ID
+------------------
+{{ member.membership_id }}
+
+Please keep your Membership ID safe. You will need it to log in to your
+Member Portal, vote in elections, and verify your membership card.
+
+NEXT STEPS
+----------
+View your Membership Card:
+{{ card_url }}
+
+Open your Member Portal:
+{{ portal_url }}
+
+You are now an active member of the {{ association.name }}.
+Your membership card is available in your portal and can be printed or
+saved as a PDF for your records.
+
+If you have any questions, please contact us.
+
+Warm regards,
+{{ association.name }}
+
+--
+This email was sent because your membership application was approved.
+Built by ProFat Technologies — https://DevProf.pythonanywhere.com

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Vote Recorded{% endblock %}
+{% block meta_description %}Your vote has been recorded.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Your vote has been recorded successfully.</h1>
+
+<p>Thank you for voting in <strong>{{ election.name }}</strong>.</p>
+
+<div class="actions">
+  <a href="{% url 'elections:election_detail' election.pk %}" class="btn">Back to election details</a>
+  {% if election.status == "closed" %}
+    <a href="{% url 'elections:results' election.pk %}">View results</a>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

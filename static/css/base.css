@@ -1,0 +1,705 @@
+/* =============================================================
+   SAMS -- base.css
+   Design tokens + reset + typography + site chrome.
+
+   Visual identity: a small civic institution, not a startup -- the
+   data itself already reads like an official ledger (MSA-2026-0001,
+   APP-2026-00001, vote tallies, turnout %). Ink/civic-green/brass on a
+   cool paper background, with a monospace "record" face reserved for
+   IDs, counts, and percentages -- never used for prose.
+
+   Every existing class name referenced by templates is preserved
+   exactly -- this file only adds tokens/rules or refines the visual
+   treatment of selectors that already existed, so no template needed
+   to change to pick up the improvements.
+   ============================================================= */
+
+:root {
+  /* --- Color: core palette (unchanged names, so nothing that reads
+     these custom properties elsewhere needs to change) --- */
+  --ink: #16212c;
+  --ink-soft: #3b4754;
+  --paper: #f6f7f5;
+  --surface: #ffffff;
+  --civic-green: #1a6b45;
+  --civic-green-deep: #0f4a30;
+  --civic-green-tint: #e8f3ec;
+  --brass: #a9762f;
+  --brass-tint: #f3e9d8;
+  --slate: #5c6670;
+  --line: #dde1e2;
+  --alert: #b23a2e;
+  --alert-tint: #fbeae8;
+
+  /* --- Color: additive semantic tokens ---
+     New, not replacements. --warning fills the one genuine gap in the
+     old palette (success/error/info existed, warning didn't). --surface-soft
+     is the "soft gray surface" the brief asks for, distinct from both
+     the page background (--paper) and card backgrounds (--surface) --
+     used for subtle secondary panels and hover backgrounds. */
+  --surface-soft: #eef1f0;
+  --warning: #8a5a00;
+  --warning-tint: #fdf1dc;
+  --success: var(--civic-green-deep);
+  --success-tint: var(--civic-green-tint);
+  --error: var(--alert);
+  --error-tint: var(--alert-tint);
+
+  /* --- Type --- */
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-record: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+
+  /* --- Spacing scale (unchanged) --- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* --- Radius: bumped slightly rounder for a more premium feel,
+     plus two new sizes for small/pill elements. Everything that used
+     var(--radius)/var(--radius-lg) before picks up the new values
+     automatically -- no selector changes needed. --- */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* --- Elevation: a consistent shadow scale, used by cards/buttons/
+     the header instead of one-off box-shadow values. --- */
+  --shadow-sm: 0 1px 2px rgba(22, 33, 44, 0.06), 0 1px 1px rgba(22, 33, 44, 0.04);
+  --shadow-md: 0 6px 16px -4px rgba(22, 33, 44, 0.12), 0 2px 6px -2px rgba(22, 33, 44, 0.08);
+  --shadow-lg: 0 20px 40px -16px rgba(22, 33, 44, 0.35);
+
+  /* --- Motion: one pair of durations used everywhere, so hover/focus/
+     open-close transitions feel consistent rather than ad hoc. --- */
+  --transition-fast: 140ms ease;
+  --transition-base: 220ms ease;
+
+  --container-width: 1080px;
+
+  /* --- Breakpoint scale ---
+     CSS custom properties can't be read inside @media conditions, so
+     this is the canonical reference every @media (max-width: …) in
+     base.css / components.css / card.css / admin.css is written
+     against -- pick the nearest value below rather than inventing a
+     new number. xs=380 / sm=480 / md=600 / lg=768 / xl=900. */
+}
+
+/* --- Reset --- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img, svg { max-width: 100%; display: block; }
+ul, ol { margin: 0; padding: 0; }
+button { font-family: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* --- Base typography --- */
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+  font-size: 1rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  line-height: 1.15;
+  margin: 0 0 var(--space-4);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+h1 { font-size: clamp(2rem, 4.2vw, 2.9rem); }
+h2 { font-size: clamp(1.45rem, 2.8vw, 2rem); }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.05rem; }
+p { margin: 0 0 var(--space-4); color: var(--ink-soft); }
+.lead { font-size: var(--text-lg); color: var(--ink-soft); }
+
+a {
+  color: var(--civic-green-deep);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { text-decoration: underline; }
+
+/* A "record" -- any official identifier, count, or percentage in the
+   system (membership IDs, application numbers, vote tallies, turnout)
+   gets the monospace data face with tabular figures and a touch of
+   letter-spacing, like a stamped serial number. Used sparingly and
+   consistently, never for prose. */
+.record {
+  font-family: var(--font-record);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* --- Accessibility: visible keyboard focus everywhere --- */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--ink);
+  color: #fff;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 0 0 var(--radius) 0;
+  z-index: 200;
+}
+.skip-link:focus { left: var(--space-2); top: var(--space-2); border-radius: var(--radius); }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* --- Layout primitives --- */
+.container { max-width: var(--container-width); margin: 0 auto; padding: 0 var(--space-4); }
+.section { padding: var(--space-12) 0; }
+.section--tight { padding: var(--space-8) 0; }
+.section--alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+/* --- Subtle page-load animation ---
+   Applied to the shared #main-content element that already exists on
+   every page (see base.html) -- every page picks this up automatically.
+   Kept short and small (6px, 0.35s) per the brief's "no excessive
+   animation"; prefers-reduced-motion above neutralises it entirely. */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#main-content { animation: fade-in-up 0.35s ease both; }
+
+.fade-in { animation: fade-in-up 0.35s ease both; }
+
+/* --- Header / Navigation --- */
+.site-header {
+  background: var(--ink);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 20;
+}
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) 0;
+  gap: var(--space-4);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.3rem;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+.brand:hover { opacity: 0.85; text-decoration: none; }
+.brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  border-radius: var(--radius-sm);
+}
+.brand .brand-code {
+  font-family: var(--font-record);
+  font-size: 0.7rem;
+  color: var(--brass-tint);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius);
+  color: #fff;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.nav-toggle:hover { background: rgba(255, 255, 255, 0.14); }
+.nav-toggle .nav-toggle-icon-open { display: inline; }
+.nav-toggle .nav-toggle-icon-close { display: none; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-icon-open { display: none; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-icon-close { display: inline; }
+.nav-toggle .nav-toggle-label-close { display: none; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-label-open { display: none; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-label-close { display: inline; }
+
+.nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  list-style: none;
+  margin: 0;
+}
+.nav-links a {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.85);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.nav-links a:hover, .nav-links a:focus-visible { color: #fff; background: rgba(255, 255, 255, 0.08); text-decoration: none; }
+.nav-links a.is-active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+  font-weight: 600;
+}
+.nav-links .nav-cta {
+  background: var(--civic-green);
+  color: #fff;
+}
+.nav-links .nav-cta:hover { background: var(--civic-green-deep); }
+.nav-links .nav-cta.is-active { background: var(--civic-green-deep); }
+
+/* Divider between the public nav and the staff-only links (Dashboard,
+   Communications). A thin vertical rule inline on desktop; becomes a
+   full-width horizontal rule once the mobile column layout kicks in. */
+.nav-sep {
+  align-self: stretch;
+  width: 1px;
+  margin: var(--space-2) var(--space-1);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+@media (max-width: 768px) {
+  .nav-bar { flex-wrap: wrap; }
+  .nav-toggle { display: inline-flex; }
+
+  #primary-nav-wrapper {
+    width: 100%;
+    order: 3;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-base);
+  }
+  /* Sized to the viewport with its own scroll, not a fixed rem value --
+     a menu with more items (e.g. a staff account) always fits and is
+     always fully reachable, instead of clipping its last entry. */
+  #primary-nav-wrapper.is-open {
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Lifts the open panel visually off the page content beneath it,
+       so the handoff from menu to content reads as a distinct layer
+       rather than the list simply stopping. */
+    box-shadow: 0 16px 24px -18px rgba(0, 0, 0, 0.55);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-1) var(--space-4);
+  }
+  /* Purpose-built mobile touch target: taller than the desktop pill,
+     consistent left inset for every item (links, the CTA and the
+     logout button alike) so the list reads as one aligned column
+     instead of a shrunk desktop bar. */
+  .nav-links a {
+    padding: var(--space-3) var(--space-3);
+    font-size: 1rem;
+    border-radius: var(--radius-sm);
+  }
+  .nav-links .nav-cta { margin-top: var(--space-2); }
+
+  /* Divider between public nav and the staff-only links, labelled so
+     the group break is legible rather than just a stray rule -- this
+     is what gives Dashboard/Communications clear hierarchy instead of
+     letting them trail off at the bottom of the list. */
+  .nav-sep {
+    position: relative;
+    width: 100%;
+    height: 1px;
+    margin: var(--space-5) var(--space-3) var(--space-3);
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .nav-sep::after {
+    content: "Staff Access";
+    position: absolute;
+    top: -0.6em;
+    left: 0;
+    background: var(--ink);
+    padding: 0 var(--space-2) 0 0;
+    font-family: var(--font-body);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+/* --- Footer --- */
+.site-footer {
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: var(--space-16);
+  border-top: 3px solid var(--brass);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-8);
+  padding: var(--space-12) 0;
+}
+.footer-logo { height: 32px; width: auto; object-fit: contain; margin-bottom: var(--space-3); border-radius: var(--radius-sm); }
+.footer-grid .footer-heading { color: #fff; font-family: var(--font-body); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-3); font-weight: 700; }
+.footer-grid a { color: rgba(255, 255, 255, 0.75); transition: color var(--transition-fast); }
+.footer-grid a:hover { color: #fff; }
+.footer-grid p { color: rgba(255, 255, 255, 0.65); margin-bottom: var(--space-2); }
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: var(--space-4) 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+.social-links { display: flex; gap: var(--space-3); list-style: none; flex-wrap: wrap; }
+.footer-credit {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-3) 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+}
+.footer-credit p { margin: 0; }
+.footer-credit a {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+.footer-credit a:hover,
+.footer-credit a:focus-visible {
+  color: var(--brass);
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  /* A deliberate mobile composition rather than the desktop auto-fit
+     grid at a smaller size: the brand block runs full width so the
+     logo/name aren't squeezed into a half column, Quick Links and
+     Contact share a balanced two-column row since both are short link
+     lists, and Support Us / Follow each get the full width they need
+     -- Support Us because donation details are a wrapped paragraph of
+     text, Follow so it reads as its own row instead of stranding a
+     single link opposite an empty column. */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "brand   brand"
+      "links   contact"
+      "support support"
+      "follow  follow";
+    gap: var(--space-6) var(--space-5);
+    padding: var(--space-8) 0;
+  }
+  .footer-brand { grid-area: brand; }
+  .footer-quicklinks { grid-area: links; }
+  .footer-contact { grid-area: contact; }
+  .footer-support { grid-area: support; }
+  .footer-follow { grid-area: follow; }
+
+  .footer-brand { display: flex; flex-direction: column; }
+  .footer-brand .footer-heading { margin-top: var(--space-1); margin-bottom: var(--space-1); font-size: 1rem; letter-spacing: 0.04em; }
+  .footer-brand p:last-child { margin-bottom: 0; font-size: 0.92rem; }
+
+  .footer-grid .footer-heading { font-size: 0.78rem; margin-bottom: var(--space-2); }
+  .footer-grid p { font-size: 0.9rem; margin-bottom: var(--space-2); }
+  .footer-contact a, .footer-contact p { overflow-wrap: anywhere; }
+
+  .footer-support .footer-heading { margin-bottom: var(--space-2); }
+  .footer-support p { font-size: 0.88rem; line-height: 1.5; }
+
+  .footer-follow .social-links { margin-top: var(--space-1); gap: var(--space-4); }
+}
+
+/* --- Buttons --- */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background: var(--civic-green);
+  color: #fff;
+  padding: 0.7rem 1.5rem;
+  border: 1px solid var(--civic-green);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+  transition: background var(--transition-fast), border-color var(--transition-fast),
+              transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+}
+.btn:hover, .btn:focus-visible {
+  background: var(--civic-green-deep);
+  border-color: var(--civic-green-deep);
+  text-decoration: none;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+.btn:active { transform: translateY(0); box-shadow: none; }
+
+.btn-outline { background: transparent; color: var(--ink); border-color: var(--ink); }
+.btn-outline:hover { background: var(--ink); color: #fff; }
+.btn-outline-on-dark { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.5); }
+.btn-outline-on-dark:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.btn-on-dark { background: #fff; color: var(--ink); border-color: #fff; }
+.btn-on-dark:hover { background: var(--brass-tint); color: var(--ink); }
+.btn-group { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.btn:disabled:hover, .btn[aria-disabled="true"]:hover { transform: none; box-shadow: none; }
+
+.btn.is-loading { color: transparent; pointer-events: none; }
+.btn.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 1.1em; height: 1.1em;
+  margin: -0.55em 0 0 -0.55em;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+.btn-outline.is-loading::after, .btn-on-dark.is-loading::after {
+  border-color: rgba(22, 33, 44, 0.25);
+  border-top-color: var(--ink);
+}
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+
+.spinner {
+  display: inline-block;
+  width: 1.1em; height: 1.1em;
+  border: 2px solid rgba(22, 33, 44, 0.15);
+  border-top-color: var(--civic-green);
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+  vertical-align: -0.2em;
+}
+.spinner-on-dark { border-color: rgba(255, 255, 255, 0.3); border-top-color: #fff; }
+
+/* --- Forms --- */
+.form-row { margin-bottom: var(--space-4); }
+label { display: block; font-weight: 600; margin-bottom: var(--space-2); font-size: 0.95rem; }
+input[type="text"], input[type="tel"], input[type="email"], input[type="date"],
+input[type="file"], select, textarea {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--ink);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+textarea { resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--slate); opacity: 0.75; }
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--civic-green);
+  box-shadow: 0 0 0 3px var(--civic-green-tint);
+}
+input:disabled, select:disabled, textarea:disabled {
+  background: var(--surface-soft);
+  color: var(--slate);
+  cursor: not-allowed;
+}
+
+.help-text { font-size: 0.85rem; color: var(--slate); margin: var(--space-2) 0 0; }
+.field-error { color: var(--error); font-size: 0.85rem; margin: var(--space-2) 0 0; font-weight: 600; display: flex; align-items: center; gap: var(--space-1); }
+.field-error::before { content: "\26A0"; font-size: 0.9em; }
+
+.form-row:has(.field-error) input,
+.form-row:has(.field-error) select,
+.form-row:has(.field-error) textarea {
+  border-color: var(--error);
+}
+.form-row:has(.field-error) input:focus,
+.form-row:has(.field-error) select:focus,
+.form-row:has(.field-error) textarea:focus {
+  box-shadow: 0 0 0 3px var(--error-tint);
+}
+
+fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); }
+legend { font-weight: 600; padding: 0 var(--space-2); }
+.radio-label { display: inline-flex; align-items: center; gap: var(--space-2); margin-right: var(--space-4); font-weight: 400; }
+
+/* --- Alerts / flash messages --- */
+.alert {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-4);
+  border: 1px solid transparent;
+  border-left-width: 4px;
+  box-shadow: var(--shadow-sm);
+  animation: fade-in-up 0.3s ease both;
+}
+.alert::before { flex-shrink: 0; font-weight: 700; line-height: 1.5; }
+.alert p { margin: 0; }
+.alert + .alert { margin-top: calc(-1 * var(--space-2)); }
+.alert-error { background: var(--error-tint); color: var(--error); border-color: #f0c9c4; border-left-color: var(--error); }
+.alert-error::before { content: "\2715"; }
+.alert-warning { background: var(--warning-tint); color: var(--warning); border-color: #f2ddb0; border-left-color: var(--warning); }
+.alert-warning::before { content: "\26A0"; }
+.alert-info { background: #eaf1fb; color: #1a3e7a; border-color: #c3d4f0; border-left-color: #3f68b0; }
+.alert-info::before { content: "\2139"; }
+.alert-success { background: var(--success-tint); color: var(--success); border-color: #bfe0cd; border-left-color: var(--success); }
+.alert-success::before { content: "\2713"; }
+.alert .btn { margin-top: var(--space-3); }
+
+.sort-links { font-size: 0.85rem; margin-bottom: var(--space-4); }
+.sort-links a { margin-right: var(--space-4); }
+.sort-links .current { font-weight: 700; text-decoration: underline; }
+
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.subnav a { color: var(--ink); font-size: 0.9rem; font-weight: 600; padding: var(--space-1) 0; border-bottom: 2px solid transparent; transition: border-color var(--transition-fast); }
+.subnav a:hover, .subnav a.is-active { text-decoration: none; border-color: var(--civic-green); }
+
+/* =============================================================
+   Utility classes
+   ============================================================= */
+
+.u-mt-1 { margin-top: var(--space-2); }
+.u-mt-2 { margin-top: var(--space-4); }
+.u-mt-3 { margin-top: var(--space-6); }
+.u-mt-4 { margin-top: var(--space-8); }
+.u-mb-1 { margin-bottom: var(--space-2); }
+.u-mb-2 { margin-bottom: var(--space-4); }
+.u-mb-3 { margin-bottom: var(--space-6); }
+.u-my-1 { margin: var(--space-2) 0; }
+.u-my-2 { margin: var(--space-4) 0; }
+.u-my-3 { margin: var(--space-6) 0; }
+.u-p-1 { padding: var(--space-2); }
+.u-p-2 { padding: var(--space-4); }
+.u-p-3 { padding: var(--space-6); }
+
+.u-max-30 { max-width: 30rem; }
+.u-max-32 { max-width: 32rem; }
+.u-max-34 { max-width: 34rem; }
+.u-max-38 { max-width: 38rem; }
+.u-m-0 { margin: 0; }
+.u-inline { display: inline; margin: 0; }
+.u-pre-line { white-space: pre-line; }
+.u-strong { font-weight: 600; }
+.u-text-muted { color: var(--slate); }
+.u-text-center { text-align: center; }
+
+.u-flex { display: flex; }
+.u-flex-col { display: flex; flex-direction: column; }
+.u-flex-wrap { flex-wrap: wrap; }
+.u-items-center { align-items: center; }
+.u-justify-center { justify-content: center; }
+.u-justify-between { justify-content: space-between; }
+.u-gap-1 { gap: var(--space-2); }
+.u-gap-2 { gap: var(--space-4); }
+.u-gap-3 { gap: var(--space-6); }
+
+/* Fixed column counts per breakpoint -- matches what the class name
+   promises (u-grid-3 is always at most 3 columns), so a 5-card grid
+   wraps to a balanced 3+2 instead of an auto-fit count that can leave
+   a single orphaned card alone on its own row. */
+.u-grid { display: grid; grid-template-columns: 1fr; gap: var(--space-6); }
+@media (min-width: 600px) {
+  .u-grid-2, .u-grid-3, .u-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 768px) {
+  .u-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .u-grid-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--surface-soft);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.7rem;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.status-label {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.status-success { background: var(--success-tint); color: var(--success); }
+.status-warning { background: var(--warning-tint); color: var(--warning); }
+.status-error { background: var(--error-tint); color: var(--error); }
+.status-neutral { background: #eceef0; color: #4a4f55; }

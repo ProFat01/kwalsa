@@ -1,0 +1,23 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{# Version 1.2 "Admin Experience" polish. Only extrahead/extrastyle are
+   overridden -- every other block (branding, nav, content structure)
+   keeps Django's own default exactly as before, via {{ block.super }}. #}
+
+{% block extrahead %}
+{{ block.super }}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+{% endblock %}
+
+{% block extrabody %}
+{{ block.super }}
+<script src="{% static 'js/admin-polish.js' %}" defer></script>
+{% endblock %}

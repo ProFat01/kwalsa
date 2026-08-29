@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Member Management{% endblock %}
+{% block meta_description %}Filter members by faculty, department, level, gender, and approval status.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Member Management</h1>
+{% include "analytics/_nav.html" %}
+<p class="meta">Filter members below, then open the results on the Members page to take action on exactly this set.</p>
+
+{% if not association %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#127963;&#65039;</div>
+    <p>No association is configured yet.</p>
+  </div>
+{% else %}
+
+<form method="get" class="filter-bar" aria-label="Member filters">
+  <div class="form-row">
+    <label for="filter-faculty">Faculty</label>
+    <select id="filter-faculty" name="faculty">
+      <option value="">All Faculties</option>
+      {% for value in filter_choices.faculty %}
+        <option value="{{ value }}" {% if filters.faculty == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-department">Department</label>
+    <select id="filter-department" name="department">
+      <option value="">All Departments</option>
+      {% for value in filter_choices.department %}
+        <option value="{{ value }}" {% if filters.department == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-level">Level</label>
+    <select id="filter-level" name="level">
+      <option value="">All Levels</option>
+      {% for value in filter_choices.level %}
+        <option value="{{ value }}" {% if filters.level == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-gender">Gender</label>
+    <select id="filter-gender" name="gender">
+      <option value="">All Genders</option>
+      {% for value, label in filter_choices.gender %}
+        <option value="{{ value }}" {% if filters.gender == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-status">Approval Status</label>
+    <select id="filter-status" name="approval_status">
+      <option value="">All Statuses</option>
+      {% for value, label in filter_choices.approval_status %}
+        <option value="{{ value }}" {% if filters.approval_status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row filter-actions">
+    <button type="submit" class="btn">Apply Filters</button>
+    {% if has_active_filters %}<a href="{% url 'analytics:member_management_dashboard' %}" class="btn btn-outline">Clear</a>{% endif %}
+  </div>
+</form>
+
+{% if has_active_filters %}
+  <div class="filter-chip-row">
+    {% if filters.faculty %}<span class="chip">Faculty: {{ filters.faculty }}</span>{% endif %}
+    {% if filters.department %}<span class="chip">Department: {{ filters.department }}</span>{% endif %}
+    {% if filters.level %}<span class="chip">Level: {{ filters.level }}</span>{% endif %}
+    {% if filters.gender %}<span class="chip">Gender: {{ filters.gender|capfirst }}</span>{% endif %}
+    {% if filters.approval_status %}<span class="chip">Status: {{ filters.approval_status|capfirst }}</span>{% endif %}
+  </div>
+{% endif %}
+
+<div class="summary-stats">
+  <div class="summary-stat">
+    <div class="summary-stat-icon" aria-hidden="true">&#128101;</div>
+    <div class="value record">{{ overview.total }}</div>
+    <div class="label">Matching Members</div>
+    <div class="summary-stat-desc">{% if has_active_filters %}With the filters above applied{% else %}Every member on file{% endif %}</div>
+  </div>
+</div>
+
+<h2>By Approval Status</h2>
+{% if overview.total %}
+  <table class="data-table">
+    <thead><tr><th>Status</th><th>Members</th><th>Percentage</th></tr></thead>
+    <tbody>
+      {% for row in overview.status_breakdown %}
+        <tr>
+          <td><span class="status-label status-{% if row.value == 'approved' %}success{% elif row.value == 'pending' %}warning{% else %}error{% endif %}">{{ row.label }}</span></td>
+          <td class="record">{{ row.count }}</td>
+          <td>
+            {{ row.percentage }}%
+            <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>By Gender</h2>
+  <table class="data-table">
+    <thead><tr><th>Gender</th><th>Members</th><th>Percentage</th></tr></thead>
+    <tbody>
+      {% for row in overview.gender_breakdown %}
+        <tr>
+          <td>{{ row.label }}</td>
+          <td class="record">{{ row.count }}</td>
+          <td>
+            {{ row.percentage }}%
+            <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p>
+    <a href="{% url 'members:staff_list' %}?{{ querystring }}" class="btn">Open Members ({{ overview.total }})</a>
+  </p>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#128269;</div>
+    <p>No members match these filters.</p>
+  </div>
+{% endif %}
+
+{% endif %}
+</div>
+{% endblock %}

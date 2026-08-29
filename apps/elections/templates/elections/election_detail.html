@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.name }}{% endblock %}
+{% block meta_description %}{{ election.name }} — positions, candidates, and manifestos.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<p><a href="{% url 'elections:election_list' %}">&larr; All elections</a></p>
+
+<h1>{{ election.name }}</h1>
+<span class="badge badge-{{ election.status }}">{{ election.status }}</span>
+
+<p class="meta">
+  <time datetime="{{ election.start_datetime|date:'c' }}">{{ election.start_datetime|date:"d M Y, H:i" }}</time>
+  &ndash;
+  <time datetime="{{ election.end_datetime|date:'c' }}">{{ election.end_datetime|date:"d M Y, H:i" }}</time>
+</p>
+
+{% if election.description %}<p>{{ election.description }}</p>{% endif %}
+
+<div class="actions u-my-2">
+  {% if election.status == "active" %}
+    <a href="{% url 'elections:voting_login' election.pk %}" class="btn">Vote Now</a>
+    {# ISSUE 4 FIX: live results are available during active elections — previously this link was gated on status=="closed" #}
+    <a href="{% url 'elections:results' election.pk %}">View Live Results</a>
+  {% endif %}
+  {% if election.status == "closed" %}
+    <a href="{% url 'elections:results' election.pk %}" class="btn">View Results</a>
+  {% endif %}
+</div>
+
+{% for item in position_candidates %}
+  <div class="position-block">
+    <h2>{{ item.position.title }}</h2>
+    {% if item.position.description %}<p class="meta">{{ item.position.description }}</p>{% endif %}
+    {% if item.candidates %}
+      {% for candidate in item.candidates %}
+        {# ISSUE 2 FIX: candidate photo now rendered if present #}
+        <div class="candidate-profile">
+          {% if candidate.photo %}
+            <img src="{{ candidate.photo.url }}" alt="{{ candidate.name }}" class="candidate-profile-photo">
+          {% endif %}
+          <div class="candidate-profile-body">
+            <p class="name">{{ candidate.name }}</p>
+            {% if candidate.manifesto %}<p class="manifesto">{{ candidate.manifesto }}</p>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="meta">No candidates added yet.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

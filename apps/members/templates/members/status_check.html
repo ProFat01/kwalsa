@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Check Registration Status{% endblock %}
+{% block meta_description %}Check your membership application status using your application number or NIN and phone number.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Check Registration Status</h1>
+<p>Search using your application number, or your NIN and phone number together.</p>
+
+{% if form.non_field_errors %}
+  <div class="alert alert-error" role="alert">
+    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+  </div>
+{% endif %}
+
+<form method="post" novalidate class="u-max-32">
+  {% csrf_token %}
+
+  <fieldset>
+    <legend>Search by</legend>
+    {% for radio in form.search_by %}
+      <label class="radio-label">{{ radio.tag }} {{ radio.choice_label }}</label>
+    {% endfor %}
+  </fieldset>
+
+  <div class="form-row">
+    <label for="{{ form.application_number.id_for_label }}">Application Number</label>
+    {{ form.application_number }}
+    {% for error in form.application_number.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div class="form-row">
+    <label for="{{ form.nin_number.id_for_label }}">NIN Number</label>
+    {{ form.nin_number }}
+    {% for error in form.nin_number.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+
+  <div class="form-row">
+    <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+    {{ form.phone_number }}
+    {% for error in form.phone_number.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+  </div>
+
+  <button type="submit" class="btn">Check Status</button>
+</form>
+
+{% if searched %}
+  {% include "members/status_result.html" %}
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard{% endblock %}
+{% block meta_description %}Your SAMS membership dashboard.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>My Dashboard</h1>
+<p class="lead">Welcome back, {{ member.full_name }}.</p>
+
+<div class="profile-card">
+  {% if member.passport_photo %}
+    <img src="{{ member.passport_photo.url }}" alt="{{ member.full_name }}" class="profile-card-photo">
+  {% else %}
+    <div class="profile-card-photo profile-card-photo-placeholder" aria-hidden="true">{{ member.full_name|first|upper }}</div>
+  {% endif %}
+  <div class="profile-card-body">
+    <h2>{{ member.full_name }}</h2>
+    <p class="record u-text-muted">{{ member.membership_id|default:"Membership ID not yet assigned" }}</p>
+    <div class="profile-status-row">
+      {% if member.approval_status == "approved" %}
+        <span class="badge badge-active">Approved</span>
+      {% elif member.approval_status == "pending" %}
+        <span class="badge badge-upcoming">Pending</span>
+      {% else %}
+        <span class="badge badge-closed">Rejected</span>
+      {% endif %}
+      <span class="badge {% if member.voting_status %}badge-active{% else %}badge-closed{% endif %}">
+        {% if member.voting_status %}Voting Eligible{% else %}Not Voting Eligible{% endif %}
+      </span>
+      {% if member.alumni_status %}<span class="badge badge-upcoming">Alumni</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="u-grid u-grid-2 u-mt-3">
+
+  <section class="content-block">
+    <h2>Profile Summary</h2>
+    <dl class="info-card">
+      <dt>Institution</dt>
+      <dd>{{ member.institution }}</dd>
+      <dt>Course</dt>
+      <dd>{{ member.course }}</dd>
+      <dt>Category</dt>
+      <dd>{{ member.get_category_display }}</dd>
+      <dt>Registration Date</dt>
+      <dd>{{ member.registration_date|date:"d M Y" }}</dd>
+      <dt>Member Status</dt>
+      <dd>{{ member.get_approval_status_display }}</dd>
+    </dl>
+    <a href="{% url 'members:portal_profile' %}" class="btn btn-outline">View Full Profile</a>
+    <a href="{% url 'members:portal_card' %}" class="btn btn-outline">View My Card</a>
+  </section>
+
+  <section class="content-block">
+    <h2>Election Status</h2>
+    {% if current_election %}
+      <p class="meta">{{ current_election.name }}</p>
+      {% if election_state == "open" %}
+        <p><span class="badge badge-active">Voting is Open</span></p>
+        {% if can_vote %}
+          <p class="u-mt-2"><a href="{% url 'elections:voting_login' current_election.pk %}" class="btn">Vote Now</a></p>
+        {% endif %}
+      {% elif election_state == "voted" %}
+        <p><span class="badge badge-closed">You Have Already Voted</span></p>
+      {% elif election_state == "upcoming" %}
+        <p><span class="badge badge-upcoming">Voting Opens Soon</span></p>
+      {% elif election_state == "closed" %}
+        <p><span class="badge badge-closed">Election Closed</span></p>
+      {% endif %}
+    {% else %}
+      <p class="meta">No election is currently scheduled.</p>
+    {% endif %}
+    <a href="{% url 'elections:election_list' %}" class="btn btn-outline">View All Elections</a>
+  </section>
+
+</div>
+</div>
+{% endblock %}

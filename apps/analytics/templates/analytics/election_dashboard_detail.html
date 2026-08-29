@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}{{ election.name }} — Analytics{% endblock %}
+
+{% block content %}
+<div class="container section">
+<p><a href="{% url 'analytics:election_dashboard_list' %}">&larr; All elections</a></p>
+<h1>{{ election.name }}</h1>
+<span class="badge badge-{{ election.status }}">{{ election.status }}</span>
+
+<div class="summary-stats">
+  <div class="summary-stat"><div class="value">{{ overview.eligible_voters }}</div><div class="label">Eligible Voters</div></div>
+  <div class="summary-stat"><div class="value">{{ overview.eligible_undergraduate }}</div><div class="label">Eligible (Undergraduate)</div></div>
+  <div class="summary-stat"><div class="value">{{ overview.eligible_alumni }}</div><div class="label">Eligible (Graduate/Alumni)</div></div>
+  <div class="summary-stat"><div class="value">{{ overview.votes_cast }}</div><div class="label">Votes Cast</div></div>
+  <div class="summary-stat"><div class="value">{{ overview.turnout_percentage }}%</div><div class="label">Turnout</div></div>
+  <div class="summary-stat"><div class="value">{{ overview.total_positions }}</div><div class="label">Positions</div></div>
+  <div class="summary-stat"><div class="value">{{ overview.total_candidates }}</div><div class="label">Candidates</div></div>
+</div>
+
+<h2>Results by Position</h2>
+{% for item in results %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th colspan="3">
+          {{ item.position.title }}
+          {% if item.is_tie %}
+            <span class="badge badge-upcoming">Tie</span>
+          {% elif item.winner %}
+            &mdash; Winner: {{ item.winner.name }}
+          {% endif %}
+        </th>
+      </tr>
+      <tr><th>Candidate</th><th>Votes</th><th>Percentage</th></tr>
+    </thead>
+    <tbody>
+      {% for row in item.candidates %}
+        <tr>
+          <td>{{ row.candidate.name }}{% if row.candidate == item.winner %} &#9733;{% endif %}</td>
+          <td>{{ row.vote_count }}</td>
+          <td>{{ row.percentage }}%</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="3">No candidates for this position.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endfor %}
+
+<h2>Participation by Age Group</h2>
+<table class="data-table">
+  <thead><tr><th>Age Group</th><th>Eligible</th><th>Voted</th><th>Participation</th></tr></thead>
+  <tbody>
+    {% for row in age_participation %}
+      <tr>
+        <td>{{ row.label }}</td>
+        <td>{{ row.eligible }}</td>
+        <td>{{ row.voted }}</td>
+        <td>{{ row.participation_percentage }}%</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

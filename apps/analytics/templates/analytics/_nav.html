@@ -1,0 +1,12 @@
+<nav class="subnav">
+  <a href="{% url 'analytics:overview' %}">Overview</a>
+  <a href="{% url 'analytics:membership_dashboard' %}">Membership</a>
+  <a href="{% url 'analytics:course_dashboard' %}">Courses</a>
+  <a href="{% url 'analytics:institution_dashboard' %}">Institutions</a>
+  <a href="{% url 'analytics:age_dashboard' %}">Age</a>
+  <a href="{% url 'analytics:member_management_dashboard' %}">Members</a>
+  <a href="{% url 'analytics:election_dashboard_list' %}">Elections</a>
+  {% if perms.analytics.view_visitor_analytics %}
+    <a href="{% url 'analytics:visitor_analytics_dashboard' %}">Visitors</a>
+  {% endif %}
+</nav>

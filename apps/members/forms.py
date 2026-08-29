@@ -1,0 +1,232 @@
+"""
+Forms for the public-facing member registration module.
+
+Two forms, two different jobs:
+  - MemberRegistrationForm: collects Member fields + a receipt upload,
+    does duplicate detection with the exact wording the spec calls for,
+    and creates both the Member and its first RegistrationApplication
+    together.
+  - StatusCheckForm: a plain (non-model) form for the public status
+    lookup, supporting either an application number or a NIN+phone pair.
+"""
+from django import forms
+from django.core.exceptions import ValidationError
+from django.db import transaction
+
+from .models import Member, RegistrationApplication
+from .services import BY_MEMBERSHIP_ID, BY_NIN, CREDENTIAL_METHOD_CHOICES, find_member_by_credentials
+from .validators import validate_image_size
+
+
+class MemberRegistrationForm(forms.ModelForm):
+    # Not a Member field — belongs to RegistrationApplication — so it's
+    # declared here rather than via Meta.fields, and handled explicitly
+    # in save() below.
+    receipt_image = forms.ImageField(
+        required=True,
+        validators=[validate_image_size],
+        help_text="Upload your payment receipt (image, max 5 MB).",
+    )
+
+    class Meta:
+        model = Member
+        fields = [
+            "full_name",
+            "phone_number",
+            "nin_number",
+            "date_of_birth",
+            "email",
+            "institution",
+            "course",
+            "faculty",
+            "department",
+            "level",
+            "category",
+            "passport_photo",
+        ]
+        widgets = {
+            "date_of_birth": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    # Explicit so the Payment Receipt field renders last, after the
+    # Member fields, exactly matching the PART 1 field order — Django
+    # would otherwise put class-declared fields like receipt_image
+    # *before* the Meta-derived ones.
+    # v1.1: email added after date_of_birth (personal info step);
+    # faculty/department/level added inside the academic step.
+    field_order = [
+        "full_name", "phone_number", "nin_number", "date_of_birth", "email",
+        "institution", "course", "faculty", "department", "level",
+        "category", "passport_photo", "receipt_image",
+    ]
+
+    def validate_unique(self):
+        # Deliberately a no-op: PART 2 of the spec calls for specific,
+        # combination-aware messages ("Phone Number Already Registered.",
+        # "NIN Number Already Registered.", "Membership Record Already
+        # Exists.") rather than Django's generic per-field "Member with
+        # this phone number already exists." Those exact messages are
+        # produced in clean() below instead.
+        pass
+
+    def clean(self):
+        cleaned_data = super().clean()
+        phone = cleaned_data.get("phone_number")
+        nin = cleaned_data.get("nin_number")
+
+        # Both fields must already be individually valid (11-digit format,
+        # phone prefix, etc. — enforced by the model field validators via
+        # ModelForm's automatic full_clean()) before a duplicate check is
+        # meaningful; if either failed its own field validation, skip.
+        if phone and nin:
+            phone_exists = Member.objects.filter(phone_number=phone).exists()
+            nin_exists = Member.objects.filter(nin_number=nin).exists()
+
+            if phone_exists or nin_exists:
+                # PART 7: flips on the "you already have a record, go check
+                # your status" recovery panel in the template regardless of
+                # which specific case below applies.
+                self.duplicate_detected = True
+
+            if phone_exists and nin_exists:
+                raise ValidationError("Membership Record Already Exists.", code="duplicate_both")
+            if phone_exists:
+                raise ValidationError("Phone Number Already Registered.", code="duplicate_phone")
+            if nin_exists:
+                raise ValidationError("NIN Number Already Registered.", code="duplicate_nin")
+
+        return cleaned_data
+
+    @transaction.atomic
+    def save(self, association):
+        """
+        Creates the Member and its first RegistrationApplication
+        together. `association` is passed in explicitly (rather than
+        being a form field) because it's resolved by the view from the
+        deployment's tenant context, never chosen by the registrant.
+        """
+        member = super().save(commit=False)
+        member.association = association
+        member.save()
+        application = RegistrationApplication.objects.create(
+            member=member,
+            receipt_image=self.cleaned_data["receipt_image"],
+        )
+        return application
+
+
+class StatusCheckForm(forms.Form):
+    """
+    Powers PART 4's "Check Registration Status" page: search either by
+    application number alone, or by NIN + phone number together (both
+    must match the same Member — neither alone is treated as sufficient
+    identification for someone else's record).
+    """
+
+    BY_APPLICATION_NUMBER = "application_number"
+    BY_NIN_PHONE = "nin_phone"
+    SEARCH_CHOICES = [
+        (BY_APPLICATION_NUMBER, "Application Number"),
+        (BY_NIN_PHONE, "NIN + Phone Number"),
+    ]
+
+    search_by = forms.ChoiceField(
+        choices=SEARCH_CHOICES,
+        widget=forms.RadioSelect,
+        initial=BY_APPLICATION_NUMBER,
+    )
+    application_number = forms.CharField(required=False, max_length=30)
+    nin_number = forms.CharField(required=False, max_length=11)
+    phone_number = forms.CharField(required=False, max_length=11)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        mode = cleaned_data.get("search_by")
+
+        if mode == self.BY_APPLICATION_NUMBER:
+            if not cleaned_data.get("application_number", "").strip():
+                raise ValidationError("Please enter your application number.")
+        elif mode == self.BY_NIN_PHONE:
+            if not cleaned_data.get("nin_number", "").strip() or not cleaned_data.get("phone_number", "").strip():
+                raise ValidationError("Please enter both your NIN and phone number.")
+
+        return cleaned_data
+
+    def lookup(self):
+        """Returns the matching RegistrationApplication, or None if nothing matches."""
+        mode = self.cleaned_data["search_by"]
+
+        if mode == self.BY_APPLICATION_NUMBER:
+            number = self.cleaned_data["application_number"].strip()
+            return (
+                RegistrationApplication.objects.filter(application_number=number)
+                .select_related("member")
+                .first()
+            )
+
+        # BY_NIN_PHONE: both must match the same Member record.
+        nin = self.cleaned_data["nin_number"].strip()
+        phone = self.cleaned_data["phone_number"].strip()
+        member = Member.objects.filter(nin_number=nin, phone_number=phone).first()
+        if not member:
+            return None
+        # Most recent application — relevant after a rejection + reapply,
+        # where the latest decision is the one the registrant cares about.
+        return member.applications.order_by("-submitted_at").first()
+
+
+class PortalLoginForm(forms.Form):
+    """
+    Stage 8: Member Self-Service Portal login.
+
+    Verifies identity the exact same way apps.elections.forms.VotingLoginForm
+    does — (Membership ID + Phone) or (NIN + Phone) — via the shared
+    apps.members.services.find_member_by_credentials lookup, so this
+    doesn't re-implement that query. The one thing that's genuinely
+    different from voting login is eligibility: the portal only requires
+    the member to be Approved, not also voting_status-eligible (a
+    narrower, elections-specific concept), and the brief calls for its
+    own two distinct messages here rather than voting login's single
+    generic one — so authenticate() returns an error *code*, not text,
+    and lets the view own the actual copy.
+    """
+
+    NOT_FOUND = "not_found"
+    NOT_APPROVED = "not_approved"
+
+    method = forms.ChoiceField(
+        choices=CREDENTIAL_METHOD_CHOICES, widget=forms.RadioSelect, initial=BY_MEMBERSHIP_ID
+    )
+    membership_id = forms.CharField(required=False, max_length=30)
+    nin_number = forms.CharField(required=False, max_length=11)
+    phone_number = forms.CharField(required=False, max_length=11)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        method = cleaned_data.get("method")
+
+        if method == BY_MEMBERSHIP_ID:
+            if not cleaned_data.get("membership_id", "").strip() or not cleaned_data.get("phone_number", "").strip():
+                raise ValidationError("Please enter your Membership ID and phone number.")
+        elif method == BY_NIN:
+            if not cleaned_data.get("nin_number", "").strip() or not cleaned_data.get("phone_number", "").strip():
+                raise ValidationError("Please enter your NIN and phone number.")
+
+        return cleaned_data
+
+    def authenticate(self):
+        """Returns (member, error_code). error_code is None on success."""
+        method = self.cleaned_data["method"]
+        identifier_field = "membership_id" if method == BY_MEMBERSHIP_ID else "nin_number"
+        member = find_member_by_credentials(
+            method,
+            self.cleaned_data.get(identifier_field, ""),
+            self.cleaned_data.get("phone_number", ""),
+        )
+
+        if member is None:
+            return None, self.NOT_FOUND
+        if member.approval_status != Member.ApprovalStatus.APPROVED:
+            return None, self.NOT_APPROVED
+
+        return member, None

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+{% block og_title %}About {{ association.name|default:"SAMS" }}{% endblock %}
+{% block meta_description %}History, mission, vision, and leadership of {{ association.name|default:"Malam Sidi Students Association" }}.{% endblock %}
+
+{% block content %}
+<div class="container section">
+  {% if not association %}
+    <div class="alert alert-info"><p>The site isn't fully configured yet.</p></div>
+  {% else %}
+    <h1>About {{ association.name }}</h1>
+    {% if site_settings.motto %}<p class="about-motto">&ldquo;{{ site_settings.motto }}&rdquo;</p>{% endif %}
+
+    <div class="content-block">
+      <h2>Our History</h2>
+      <p>{{ site_settings.about_text|default:"This section is awaiting content from the association's administrators." }}</p>
+    </div>
+
+    <div class="content-block">
+      <h2>Our Mission</h2>
+      <p>{{ site_settings.mission|default:"This section is awaiting content from the association's administrators." }}</p>
+    </div>
+
+    <div class="content-block">
+      <h2>Our Vision</h2>
+      <p>{{ site_settings.vision|default:"This section is awaiting content from the association's administrators." }}</p>
+    </div>
+
+    <div class="content-block">
+      <h2>Leadership</h2>
+      <p>{{ site_settings.leadership_text|default:"This section is awaiting content from the association's administrators." }}</p>
+    </div>
+
+    {% if site_settings.donation_details %}
+      <div class="content-block">
+        <h2>Support {{ association.short_name }}</h2>
+        <p class="u-pre-line">{{ site_settings.donation_details }}</p>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

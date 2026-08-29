@@ -1,0 +1,450 @@
+/* Membership Card System v1 — scoped to card.html and verify.html only.
+   Reuses base.css tokens (--font-display, --font-body, --font-record,
+   --space-*, --radius, --shadow-*) for spacing/type/shadow scale, but
+   defines its own local color palette on `.id-card` rather than
+   pulling in --civic-green etc. This is deliberate: the brief asks
+   for a specific institutional-ID palette (deep green #0F5D3E, gold
+   #D4AF37, soft cream, light gray) distinct from the rest of the
+   site's civic-green/brass identity, and scoping it locally means
+   nothing outside the card can regress from this change.
+
+   .verify-badge / .verify-result / .verify-badge-valid / -invalid
+   (used by verify.html) are UNCHANGED below — only the .id-card-*
+   ruleset (verify.html doesn't use it) and .card-page/.card-actions
+   layout wrappers were touched. */
+
+.card-page {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* belt-and-suspenders: the card itself never exceeds its parent, but this guarantees no horizontal scroll regardless */
+  box-sizing: border-box;
+}
+
+@media (max-width: 380px) {
+  /* Very narrow phones (e.g. 320-360px wide): claw back a little
+     horizontal room from the page padding rather than the card. */
+  .card-page {
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+  }
+}
+
+/* =============================================================
+   The card itself
+   ============================================================= */
+
+.id-card {
+  /* Local palette — see file header for why this isn't --civic-green */
+  --id-green: #0f5d3e;
+  --id-green-deep: #0a3f2a;
+  --id-gold: #d4af37;
+  --id-gold-soft: #e9d38f;
+  --id-cream: #fbf8f1;
+  --id-gray: #e7e5e0;
+  --id-ink: #1c2b24;
+  --id-slate: #5f6d66;
+
+  width: 100%;
+  max-width: 420px;
+  min-width: 0; /* let it shrink below its content's natural size instead of overflowing on very narrow screens */
+  /* CR80 card ratio (85.60mm x 53.98mm) preserved at every screen size;
+     the print stylesheet below locks this to the true physical mm. */
+  aspect-ratio: 85.6 / 53.98;
+  margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: var(--id-cream);
+  border: 1px solid var(--id-gray);
+  border-radius: 16px;
+  box-shadow:
+    0 22px 48px -18px rgba(15, 93, 62, 0.4),
+    0 4px 12px rgba(15, 23, 20, 0.09);
+
+  font-family: var(--font-body);
+  color: var(--id-ink);
+}
+
+/* --- Header --- */
+
+.id-card-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 3.5%;
+  padding: 4.5% 5.5% 3%;
+  background: linear-gradient(135deg, var(--id-green) 0%, var(--id-green-deep) 100%);
+  color: #fff;
+}
+
+.id-card-logo {
+  flex-shrink: 0;
+  width: 15%;
+  max-width: 46px;
+  min-width: 30px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid var(--id-gold);
+}
+
+.id-card-header-text {
+  min-width: 0;
+}
+
+.id-card-assoc-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(0.7rem, 3.3vw, 1rem);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id-card-subtitle {
+  margin: 2px 0 0;
+  font-size: clamp(0.5rem, 1.9vw, 0.65rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--id-gold);
+}
+
+.id-card-divider {
+  flex: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--id-gold) 0%, var(--id-gold-soft) 50%, var(--id-gold) 100%);
+}
+
+/* --- Body: photo + info --- */
+
+.id-card-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  gap: 4.5%;
+  padding: 4.5% 5.5%;
+}
+
+.id-card-photo-frame {
+  flex: 0 0 auto;
+  width: 27%;
+  max-width: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+}
+
+.id-card-photo,
+.id-card-photo-placeholder {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  border: 2.5px solid var(--id-gold);
+  box-shadow: 0 5px 12px rgba(15, 93, 62, 0.28);
+  background: var(--id-gray);
+  object-fit: cover; /* crop to fill the frame — the photo is never stretched */
+}
+
+.id-card-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.1rem, 4.6vw, 1.7rem);
+  color: var(--id-green);
+}
+
+/* --- Signature area: a blank rule for the holder/registrar to sign
+   by hand on the printed card, same as a physical university ID —
+   purely decorative, no member data involved. --- */
+
+.id-card-signature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.id-card-signature-line {
+  display: block;
+  width: 100%;
+  border-top: 1px dotted var(--id-slate);
+}
+
+.id-card-signature-label {
+  margin-top: 2px;
+  font-size: clamp(0.36rem, 1.4vw, 0.48rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--id-slate);
+  text-align: center;
+}
+
+.id-card-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.id-card-name {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(0.76rem, 3.4vw, 1.05rem);
+  line-height: 1.2;
+  color: var(--id-green-deep);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Status badge --- */
+
+.id-card-badge {
+  display: inline-block;
+  width: fit-content;
+  margin-bottom: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: clamp(0.44rem, 1.7vw, 0.58rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.id-card-badge-approved { background: #e2f1ea; color: var(--id-green); }
+.id-card-badge-pending  { background: #faf0d8; color: #8a5a00; }
+.id-card-badge-rejected { background: #f4e6e5; color: #8a3226; }
+
+/* --- Facts grid --- */
+
+.id-card-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 7px;
+  row-gap: 1px;
+  margin: 3px 0 0;
+  font-size: clamp(0.42rem, 1.7vw, 0.6rem);
+}
+
+.id-card-facts dt {
+  color: var(--id-slate);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.id-card-facts dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--id-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.id-card-facts dd.id-card-fact-strong {
+  color: var(--id-green-deep);
+  font-family: var(--font-record);
+}
+
+/* --- Footer: QR focal point --- */
+
+.id-card-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3% 5.5% 4%;
+  background: var(--id-gray);
+  border-top: 1px solid rgba(15, 93, 62, 0.15);
+}
+
+.id-card-footer-label {
+  margin: 0;
+  font-size: clamp(0.42rem, 1.7vw, 0.58rem);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--id-slate);
+}
+
+.id-card-footer-org {
+  margin: 2px 0 0;
+  font-size: clamp(0.42rem, 1.7vw, 0.58rem);
+  font-weight: 600;
+  color: var(--id-green-deep);
+  font-family: var(--font-record);
+}
+
+.id-card-qr-frame {
+  flex: 0 0 auto;
+  background: #fff;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--id-gray);
+  box-shadow: 0 4px 10px rgba(15, 93, 62, 0.25);
+  line-height: 0;
+}
+
+.id-card-qr {
+  display: block;
+  width: clamp(46px, 15vw, 64px);
+  height: clamp(46px, 15vw, 64px);
+}
+
+/* =============================================================
+   Screen layout below the card
+   ============================================================= */
+
+.card-actions {
+  max-width: 420px;
+  margin: var(--space-4) auto 0;
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap; /* two buttons side by side on desktop, stacked-safe on very narrow phones */
+}
+
+/* --- Mobile print-tip dialog (Task 2) --- */
+
+.card-print-dialog {
+  width: min(90vw, 360px);
+  padding: var(--space-6);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-print-dialog::backdrop {
+  background: rgba(15, 23, 20, 0.55);
+}
+
+.card-print-dialog-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  color: var(--ink);
+}
+
+.card-print-dialog-body {
+  margin: 0 0 var(--space-4);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.card-print-dialog-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* =============================================================
+   Verification result page (verify.html) — unchanged from v1
+   ============================================================= */
+
+.verify-result {
+  max-width: 420px;
+  margin: var(--space-8) auto;
+  text-align: center;
+}
+
+.verify-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+}
+
+.verify-badge-valid {
+  background: var(--success-tint);
+  color: var(--success);
+}
+
+.verify-badge-invalid {
+  background: var(--error-tint);
+  color: var(--error);
+}
+
+/* =============================================================
+   Print: lock to true CR80 physical dimensions (85.60mm x 53.98mm)
+   ============================================================= */
+
+@media print {
+  @page {
+    size: auto;
+    margin: 8mm;
+  }
+
+  .site-header,
+  .site-footer,
+  .card-actions,
+  .alert,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .card-page {
+    display: block;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .id-card {
+    width: 85.6mm;
+    height: 53.98mm;
+    max-width: none;
+    min-width: 0;
+    aspect-ratio: auto;
+    margin: 0 auto; /* centred on the printed page */
+    border-radius: 3mm;
+    border-color: #ccc;
+    box-shadow: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    break-inside: avoid;
+    page-break-inside: avoid; /* legacy alias for print engines that predate break-inside */
+  }
+
+  .id-card-header { padding: 2.2mm 3.2mm 1.6mm; gap: 2mm; }
+  .id-card-logo { max-width: 7mm; min-width: 7mm; }
+  .id-card-assoc-name { font-size: 3.2mm; }
+  .id-card-subtitle { font-size: 2mm; }
+  .id-card-divider { height: 0.6mm; }
+
+  .id-card-body { padding: 2.4mm 3.2mm; gap: 2.6mm; }
+  .id-card-photo-frame { max-width: 17mm; gap: 1mm; }
+  .id-card-name { font-size: 3mm; }
+  .id-card-badge { font-size: 1.9mm; padding: 0.4mm 2mm; margin-bottom: 1mm; }
+  .id-card-facts { font-size: 2mm; column-gap: 1.5mm; }
+  .id-card-signature-label { font-size: 1.5mm; }
+
+  .id-card-footer { padding: 1.6mm 3.2mm 2.2mm; }
+  .id-card-footer-label,
+  .id-card-footer-org { font-size: 1.8mm; }
+  .id-card-qr { width: 12mm; height: 12mm; }
+}

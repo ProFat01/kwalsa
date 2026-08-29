@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Visitor Analytics{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Visitor Analytics</h1>
+{% include "analytics/_nav.html" %}
+
+{% if not association %}
+  <p>No association is configured yet.</p>
+{% else %}
+
+  <h2>Overview</h2>
+  <div class="summary-stats">
+    <div class="summary-stat"><div class="value">{{ overview.visits_today }}</div><div class="label">Visits Today</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.unique_today }}</div><div class="label">Unique Today</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.visits_this_week }}</div><div class="label">Visits This Week</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.unique_this_week }}</div><div class="label">Unique This Week</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.visits_this_month }}</div><div class="label">Visits This Month</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.unique_this_month }}</div><div class="label">Unique This Month</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.total_visits }}</div><div class="label">Total Visits</div></div>
+    <div class="summary-stat"><div class="value">{{ overview.total_unique_visitors }}</div><div class="label">Total Unique Visitors</div></div>
+  </div>
+  <p class="u-text-muted">
+    Unique visitors are an approximate, privacy-preserving metric based on a
+    one-way hash that rotates daily &mdash; they may differ from analytics
+    platforms that use persistent cookies or cross-device tracking, and
+    figures spanning more than one day count a returning visitor once per
+    day rather than once overall.
+  </p>
+
+  <h2>Traffic Trend</h2>
+  <nav class="subnav">
+    <a href="?range=today" class="{% if range_key == 'today' %}is-active{% endif %}">Today</a>
+    <a href="?range=7d" class="{% if range_key == '7d' %}is-active{% endif %}">Last 7 days</a>
+    <a href="?range=30d" class="{% if range_key == '30d' %}is-active{% endif %}">Last 30 days</a>
+    <a href="?range=90d" class="{% if range_key == '90d' %}is-active{% endif %}">Last 90 days</a>
+  </nav>
+  {% if trend %}
+    <table class="data-table">
+      <thead><tr><th>Date</th><th class="is-number">Visits</th><th class="is-number">Unique Visitors</th></tr></thead>
+      <tbody>
+        {% for row in trend %}
+          <tr>
+            <td>{{ row.date }}</td>
+            <td class="is-number">{{ row.visits }}</td>
+            <td class="is-number">{{ row.unique_visitors }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No recorded visits in this range yet.</p>
+  {% endif %}
+
+  <h2>Most Visited Pages</h2>
+  {% if pages %}
+    <table class="data-table">
+      <thead><tr><th>Page</th><th class="is-number">Visits</th><th class="is-number">% of Total</th></tr></thead>
+      <tbody>
+        {% for row in pages %}
+          <tr>
+            <td>{{ row.label }}</td>
+            <td class="is-number">{{ row.visits }}</td>
+            <td class="is-number">{{ row.percentage }}%</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No page activity in this range yet.</p>
+  {% endif %}
+
+  <h2>Devices</h2>
+  {% for row in devices %}
+    <p>{{ row.label }} &mdash; {{ row.percentage }}% ({{ row.count }})</p>
+    <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+  {% endfor %}
+
+  <h2>Browsers</h2>
+  {% for row in browsers %}
+    <p>{{ row.label }} &mdash; {{ row.percentage }}% ({{ row.count }})</p>
+    <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+  {% endfor %}
+
+  <h2>Referrers</h2>
+  {% for row in referrers %}
+    <p>{{ row.label }} &mdash; {{ row.percentage }}% ({{ row.count }})</p>
+    <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+  {% endfor %}
+
+{% endif %}
+</div>
+{% endblock %}

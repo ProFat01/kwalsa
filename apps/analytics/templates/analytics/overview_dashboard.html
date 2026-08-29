@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Overview{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Analytics Overview</h1>
+{% include "analytics/_nav.html" %}
+
+{% if not association %}
+  <p>No association is configured yet.</p>
+{% else %}
+  <h2>Membership</h2>
+  <div class="summary-stats">
+    <div class="summary-stat"><div class="value">{{ membership.total_members }}</div><div class="label">Total Members</div></div>
+    <div class="summary-stat"><div class="value">{{ membership.total_approved }} ({{ membership.approved_percentage }}%)</div><div class="label">Approved</div></div>
+    <div class="summary-stat"><div class="value">{{ membership.total_pending }} ({{ membership.pending_percentage }}%)</div><div class="label">Pending</div></div>
+    <div class="summary-stat"><div class="value">{{ membership.total_rejected }} ({{ membership.rejected_percentage }}%)</div><div class="label">Rejected</div></div>
+    <div class="summary-stat"><div class="value">{{ membership.total_alumni }} ({{ membership.alumni_percentage }}%)</div><div class="label">Alumni</div></div>
+  </div>
+
+  <h2>Elections</h2>
+  {% if elections %}
+    <table class="data-table">
+      <thead>
+        <tr><th>Election</th><th>Status</th><th>Eligible</th><th>Votes Cast</th><th>Turnout</th><th>Positions</th><th>Candidates</th></tr>
+      </thead>
+      <tbody>
+        {% for item in elections %}
+          <tr>
+            <td><a href="{% url 'analytics:election_dashboard_detail' item.election.pk %}">{{ item.election.name }}</a></td>
+            <td><span class="badge badge-{{ item.election.status }}">{{ item.election.status }}</span></td>
+            <td>{{ item.eligible_voters }}</td>
+            <td>{{ item.votes_cast }}</td>
+            <td>{{ item.turnout_percentage }}%</td>
+            <td>{{ item.total_positions }}</td>
+            <td>{{ item.total_candidates }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No elections yet.</p>
+  {% endif %}
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Members{% endblock %}
+{% block meta_description %}Staff view of registered members, filterable by faculty, department, level, gender, and approval status.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Members</h1>
+<p class="meta">
+  <a href="{% url 'analytics:member_management_dashboard' %}">&larr; Back to Member Management</a>
+</p>
+
+{% if not association %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#127963;&#65039;</div>
+    <p>No association is configured yet.</p>
+  </div>
+{% else %}
+
+<form method="get" class="filter-bar" aria-label="Member filters">
+  <div class="form-row">
+    <label for="filter-faculty">Faculty</label>
+    <select id="filter-faculty" name="faculty">
+      <option value="">All Faculties</option>
+      {% for value in filter_choices.faculty %}
+        <option value="{{ value }}" {% if filters.faculty == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-department">Department</label>
+    <select id="filter-department" name="department">
+      <option value="">All Departments</option>
+      {% for value in filter_choices.department %}
+        <option value="{{ value }}" {% if filters.department == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-level">Level</label>
+    <select id="filter-level" name="level">
+      <option value="">All Levels</option>
+      {% for value in filter_choices.level %}
+        <option value="{{ value }}" {% if filters.level == value %}selected{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-gender">Gender</label>
+    <select id="filter-gender" name="gender">
+      <option value="">All Genders</option>
+      {% for value, label in filter_choices.gender %}
+        <option value="{{ value }}" {% if filters.gender == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="filter-status">Approval Status</label>
+    <select id="filter-status" name="approval_status">
+      <option value="">All Statuses</option>
+      {% for value, label in filter_choices.approval_status %}
+        <option value="{{ value }}" {% if filters.approval_status == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row filter-actions">
+    <button type="submit" class="btn">Apply Filters</button>
+    {% if has_active_filters %}<a href="{% url 'members:staff_list' %}" class="btn btn-outline">Clear</a>{% endif %}
+  </div>
+</form>
+
+{% if members %}
+  <form method="get" action="{% url 'accounts:communication_compose' %}" id="bulk-announce-form">
+    <input type="hidden" name="recipient_type" value="selected">
+    <p class="row-actions u-mb-2">
+      <button type="button" class="btn btn-sm btn-outline" id="select-all-members">Select All On Page</button>
+      <button type="submit" class="btn btn-sm" id="send-to-selected" disabled>Send Announcement to Selected</button>
+      <span class="meta">{{ members.paginator.count }} member{{ members.paginator.count|pluralize }} matching the filters above</span>
+    </p>
+    <table class="data-table" data-staff-members-table>
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Name</th>
+          <th>Membership ID</th>
+          <th>Faculty / Department / Level</th>
+          <th>Gender</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for member in members %}
+          <tr>
+            <td><input type="checkbox" name="selected_member_ids" value="{{ member.pk }}" class="member-select-checkbox" aria-label="Select {{ member.full_name }}"></td>
+            <td>{{ member.full_name }}</td>
+            <td class="record">{{ member.membership_id|default:"—" }}</td>
+            <td>{{ member.faculty|default:"—" }}{% if member.department %} / {{ member.department }}{% endif %}{% if member.level %} / {{ member.level }}{% endif %}</td>
+            <td>{{ member.get_gender_display|default:"—" }}</td>
+            <td><span class="status-label status-{% if member.approval_status == 'approved' %}success{% elif member.approval_status == 'pending' %}warning{% else %}error{% endif %}">{{ member.get_approval_status_display }}</span></td>
+            <td>
+              <div class="row-actions">
+                <a class="btn btn-sm btn-outline" href="{% url 'admin:members_member_change' member.pk %}">View Member</a>
+                <a class="btn btn-sm btn-outline" href="{% url 'members:staff_card' member.pk %}">View Card</a>
+                {% if member.membership_id %}
+                  <button type="button" class="btn btn-sm btn-outline copy-membership-id" data-membership-id="{{ member.membership_id }}">Copy ID</button>
+                {% endif %}
+                {% if member.email %}
+                  <a class="btn btn-sm btn-outline" href="{% url 'accounts:communication_compose' %}?recipient_type=selected&amp;selected_member_ids={{ member.pk }}">Send Email</a>
+                {% else %}
+                  <span class="row-action-reserved" title="No email on file">Send Email</span>
+                {% endif %}
+                <span class="row-action-reserved" title="Coming soon">Send SMS</span>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </form>
+
+  {% if members.has_other_pages %}
+    <nav class="pagination" aria-label="Members pages">
+      {% if members.has_previous %}<a href="?{{ querystring }}&amp;page={{ members.previous_page_number }}">&larr; Previous</a>{% endif %}
+      <span class="meta">Page {{ members.number }} of {{ members.paginator.num_pages }}</span>
+      {% if members.has_next %}<a href="?{{ querystring }}&amp;page={{ members.next_page_number }}">Next &rarr;</a>{% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon" aria-hidden="true">&#128269;</div>
+    <p>No members match these filters.</p>
+  </div>
+{% endif %}
+
+{% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/staff-members.js' %}" defer></script>
+{% endblock %}

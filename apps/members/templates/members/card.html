@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Membership Card{% endblock %}
+{% block meta_description %}Your SAMS digital membership card.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/card.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>{% if is_staff_view %}Membership Card — {{ member.full_name }}{% else %}My Membership Card{% endif %}</h1>
+
+<div class="card-page">
+  <div class="id-card">
+
+    <div class="id-card-header">
+      {% if member.association.logo %}
+        <img src="{{ member.association.logo.url }}" alt="" class="id-card-logo">
+      {% endif %}
+      <div class="id-card-header-text">
+        <p class="id-card-assoc-name">{{ member.association.name }}</p>
+        <p class="id-card-subtitle">Membership Card</p>
+      </div>
+    </div>
+    <div class="id-card-divider" aria-hidden="true"></div>
+
+    <div class="id-card-body">
+      <div class="id-card-photo-frame">
+        {% if member.passport_photo %}
+          <img src="{{ member.passport_photo.url }}" alt="{{ member.full_name }}" class="id-card-photo">
+        {% else %}
+          <div class="id-card-photo id-card-photo-placeholder" aria-hidden="true">{{ member.full_name|first|upper }}</div>
+        {% endif %}
+        <div class="id-card-signature" aria-hidden="true">
+          <span class="id-card-signature-line"></span>
+          <span class="id-card-signature-label">Signature</span>
+        </div>
+      </div>
+
+      <div class="id-card-info">
+        <p class="id-card-name">{{ member.full_name }}</p>
+
+        {% if member.approval_status == "approved" %}
+          <span class="id-card-badge id-card-badge-approved">Approved</span>
+        {% elif member.approval_status == "pending" %}
+          <span class="id-card-badge id-card-badge-pending">Pending</span>
+        {% else %}
+          <span class="id-card-badge id-card-badge-rejected">Rejected</span>
+        {% endif %}
+
+        <dl class="id-card-facts">
+          <dt>Mem. No.</dt>
+          <dd class="id-card-fact-strong">{{ member.membership_id|default:"Pending" }}</dd>
+
+          {% if member.faculty %}<dt>Faculty</dt><dd>{{ member.faculty }}</dd>{% endif %}
+          {% if member.department %}<dt>Dept.</dt><dd>{{ member.department }}</dd>{% endif %}
+          {% if member.level %}<dt>Level</dt><dd>{{ member.level }}</dd>{% endif %}
+          {% if member.gender %}<dt>Gender</dt><dd>{{ member.get_gender_display }}</dd>{% endif %}
+          {% if member.phone_number %}<dt>Phone</dt><dd>{{ member.phone_number }}</dd>{% endif %}
+          <dt>Issued</dt>
+          <dd>{{ card.issued_at|date:"d M Y" }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="id-card-footer">
+      <div class="id-card-footer-text">
+        <p class="id-card-footer-label">Scan to Verify</p>
+        <p class="id-card-footer-org">{{ member.association.short_name|default:member.association.name }}</p>
+      </div>
+      <div class="id-card-qr-frame">
+        {% if is_staff_view %}
+          <img src="{% url 'members:staff_card_qr' member.pk %}" alt="QR code — scan to verify this membership card at {{ qr_url }}" class="id-card-qr">
+        {% else %}
+          <img src="{% url 'members:portal_card_qr' %}" alt="QR code — scan to verify this membership card at {{ qr_url }}" class="id-card-qr">
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="card-actions no-print">
+  <button type="button" class="btn" id="print-card-btn">Print / Save as PDF</button>
+  {% if not is_staff_view %}
+    <a href="{% url 'members:portal_dashboard' %}" class="btn btn-outline">Back to Dashboard</a>
+  {% endif %}
+</div>
+
+<dialog id="mobile-print-dialog" class="no-print card-print-dialog">
+  <p class="card-print-dialog-title">Best results on mobile</p>
+  <p class="card-print-dialog-body">
+    Open this page in Chrome and use <strong>Share &rarr; Print &rarr; Save as PDF</strong> for a cleaner result
+    than the in-page print button on some phones.
+  </p>
+  <div class="card-print-dialog-actions">
+    <button type="button" class="btn btn-outline" id="mobile-print-dismiss">Got it</button>
+    <button type="button" class="btn" id="mobile-print-anyway">Print Anyway</button>
+  </div>
+</dialog>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/card.js' %}" defer></script>{% endblock %}

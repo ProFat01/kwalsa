@@ -1,0 +1,24 @@
+# Secrets — .env.example is the template; the real .env must never be committed.
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# Django
+db.sqlite3
+db.sqlite3-*
+/staticfiles/
+/media/
+/logs/
+
+# Backups produced by apps.core's backup management command
+/backups/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

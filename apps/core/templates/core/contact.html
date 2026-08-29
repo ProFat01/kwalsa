@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Contact{% endblock %}
+{% block og_title %}Contact {{ association.name|default:"SAMS" }}{% endblock %}
+{% block meta_description %}Get in touch with {{ association.name|default:"Malam Sidi Students Association" }}.{% endblock %}
+
+{% block content %}
+<div class="container section">
+  {% if not association %}
+    <div class="alert alert-info"><p>The site isn't fully configured yet.</p></div>
+  {% else %}
+    <h1>Contact Us</h1>
+    <p>Questions about membership, elections, or anything else — reach out below.</p>
+
+    <div class="contact-grid">
+      <div>
+        <h2>Details</h2>
+        <dl>
+          {% if site_settings.contact_email %}
+            <div class="contact-detail"><dt>Email</dt><dd><a href="mailto:{{ site_settings.contact_email }}">{{ site_settings.contact_email }}</a></dd></div>
+          {% endif %}
+          {% if site_settings.contact_phone %}
+            <div class="contact-detail"><dt>Phone</dt><dd>{{ site_settings.contact_phone }}</dd></div>
+          {% endif %}
+          {% if site_settings.address %}
+            <div class="contact-detail"><dt>Address</dt><dd>{{ site_settings.address }}</dd></div>
+          {% endif %}
+        </dl>
+
+        {% if site_settings.facebook_url or site_settings.x_url or site_settings.instagram_url or site_settings.whatsapp_url %}
+          <div class="contact-detail">
+            <dt>Social</dt>
+            <dd>
+              <ul class="social-links u-mt-1">
+                {% if site_settings.facebook_url %}<li><a href="{{ site_settings.facebook_url }}">Facebook</a></li>{% endif %}
+                {% if site_settings.x_url %}<li><a href="{{ site_settings.x_url }}">X</a></li>{% endif %}
+                {% if site_settings.instagram_url %}<li><a href="{{ site_settings.instagram_url }}">Instagram</a></li>{% endif %}
+                {% if site_settings.whatsapp_url %}<li><a href="{{ site_settings.whatsapp_url }}">WhatsApp</a></li>{% endif %}
+              </ul>
+            </dd>
+          </div>
+        {% endif %}
+
+        {% if not site_settings.contact_email and not site_settings.contact_phone and not site_settings.address %}
+          <p class="meta">Contact details haven't been added yet — use the form to reach us.</p>
+        {% endif %}
+      </div>
+
+      <div>
+        <h2>Send a Message</h2>
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">{% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}</div>
+        {% endif %}
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% for field in form %}
+            <div class="form-row">
+              <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+              {{ field }}
+              {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+          {% endfor %}
+          <button type="submit" class="btn">Send Message</button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

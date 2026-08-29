@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Vote — {{ election.name }}{% endblock %}
+{% block meta_description %}Verify your membership to vote in {{ election.name }}.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>{{ election.name }}</h1>
+
+{% if voting_closed_message %}
+  <div class="alert alert-error" role="alert">
+    <p>{{ voting_closed_message }}</p>
+  </div>
+  <a href="{% url 'elections:election_detail' election.pk %}" class="btn">Back to election details</a>
+{% else %}
+  <p>Verify your details to vote in this election.</p>
+
+  {% if error_message %}
+    <div class="alert alert-error" role="alert"><p>{{ error_message }}</p></div>
+  {% endif %}
+  {% if form.non_field_errors %}
+    <div class="alert alert-error" role="alert">
+      {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate class="u-max-30">
+    {% csrf_token %}
+
+    <fieldset>
+      <legend>Verify using</legend>
+      {% for radio in form.method %}
+        <label class="radio-label">{{ radio.tag }} {{ radio.choice_label }}</label>
+      {% endfor %}
+    </fieldset>
+
+    <div class="form-row">
+      <label for="{{ form.membership_id.id_for_label }}">Membership ID</label>
+      {{ form.membership_id }}
+    </div>
+    <div class="form-row">
+      <label for="{{ form.nin_number.id_for_label }}">NIN Number</label>
+      {{ form.nin_number }}
+    </div>
+    <div class="form-row">
+      <label for="{{ form.phone_number.id_for_label }}">Phone Number</label>
+      {{ form.phone_number }}
+    </div>
+
+    <button type="submit" class="btn">Continue to Ballot</button>
+  </form>
+{% endif %}
+</div>
+{% endblock %}

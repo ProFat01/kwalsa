@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Results — {{ election.name }}{% endblock %}
+{% block meta_description %}Live results for {{ election.name }}: vote counts, percentages, and turnout.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<p><a href="{% url 'elections:election_detail' election.pk %}">&larr; {{ election.name }}</a></p>
+
+<h1>Results: {{ election.name }}</h1>
+<span class="badge badge-{{ election.status }}">{{ election.status }}</span>
+
+{# ISSUE 4 FIX: clearly label live vs. final results so users understand the context #}
+{% if election.status == "active" %}
+  <div class="alert alert-info u-mt-2">
+    <p><strong>Voting is still open.</strong> These are live, in-progress results and will continue to update until the election closes on {{ election.end_datetime|date:"d M Y" }} at {{ election.end_datetime|date:"H:i" }}.</p>
+  </div>
+{% endif %}
+
+<div class="summary-stats">
+  <div class="summary-stat">
+    <div class="value record">{{ voters_count }}</div>
+    <div class="label">Total Votes Cast</div>
+  </div>
+  <div class="summary-stat">
+    <div class="value record">{{ eligible_voters_count }}</div>
+    <div class="label">Eligible Voters</div>
+  </div>
+  <div class="summary-stat">
+    <div class="value record">{{ turnout_percentage }}%</div>
+    <div class="label">Voter Turnout</div>
+  </div>
+</div>
+
+{% for item in results %}
+  <div class="position-block">
+    <h2>{{ item.position.title }}</h2>
+    {% if item.candidates %}
+      <table class="data-table">
+        <thead>
+          <tr><th>Candidate</th><th class="is-number">Votes</th><th class="is-number">Percentage</th></tr>
+        </thead>
+        <tbody>
+          {% for row in item.candidates %}
+            <tr>
+              <td>
+                {# ISSUE 2 FIX: candidate photo thumbnail in results #}
+                {% if row.candidate.photo %}
+                  <img src="{{ row.candidate.photo.url }}" alt="{{ row.candidate.name }}" class="results-candidate-photo">
+                {% endif %}
+                {{ row.candidate.name }}
+              </td>
+              <td class="is-number">{{ row.vote_count }}</td>
+              <td class="is-number">
+                {{ row.percentage }}%
+                <div class="vote-bar-track"><div class="vote-bar-fill" data-percentage="{{ row.percentage }}"></div></div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="meta">No candidates for this position.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

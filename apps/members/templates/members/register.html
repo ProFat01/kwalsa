@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+{% block meta_description %}Register for membership at Malam Sidi Students Association.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>Membership Registration</h1>
+
+{% if association_missing %}
+  <div class="alert alert-error">
+    <p>Registration is not currently available. Please contact the administrator.</p>
+  </div>
+{% else %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-error error-card" role="alert">
+      {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+    </div>
+  {% endif %}
+
+  {% if show_recovery_cta %}
+    <div class="alert alert-warning error-card">
+      <p>You already have a registration record. Please use the Check Status page to view your application status or Membership ID.</p>
+      <a href="{% url 'members:status_check' %}" class="btn">Check Registration Status</a>
+    </div>
+  {% endif %}
+
+  <p class="lead u-max-38">A few quick steps &mdash; personal details, academic details, your documents, then a final review before you submit.</p>
+
+  <form method="post" enctype="multipart/form-data" novalidate class="wizard-form u-max-38" id="registration-form" data-registration-wizard data-no-loading>
+    {% csrf_token %}
+
+    <div class="wizard-progress" id="wizard-progress" hidden>
+      <div class="wizard-progress-steps" id="wizard-progress-steps" aria-hidden="true">
+        <span class="wizard-progress-dot is-current" data-dot="1">1</span>
+        <span class="wizard-progress-dot" data-dot="2">2</span>
+        <span class="wizard-progress-dot" data-dot="3">3</span>
+        <span class="wizard-progress-dot" data-dot="4">4</span>
+      </div>
+      <div class="wizard-progress-track">
+        <div class="wizard-progress-fill" id="wizard-progress-fill"></div>
+      </div>
+      <p class="wizard-progress-label" id="wizard-progress-label" aria-live="polite">Step 1 of 4 &mdash; Personal Information</p>
+    </div>
+
+    <div class="wizard-steps">
+
+      <div class="wizard-step" data-step="1" aria-labelledby="step-heading-1">
+        <h2 id="step-heading-1" class="wizard-step-title">Personal Information</h2>
+
+        <div class="form-row" data-field="full_name">
+          <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}{% if form.full_name.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.full_name }}
+          {% if form.full_name.help_text %}<p class="help-text">{{ form.full_name.help_text }}</p>{% endif %}
+          {% for error in form.full_name.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="phone_number">
+          <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}{% if form.phone_number.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          <div class="input-with-feedback">
+            {{ form.phone_number }}
+            <span class="input-feedback-icon" id="feedback-icon-phone_number" aria-hidden="true"></span>
+          </div>
+          <p class="field-live-feedback" id="feedback-phone_number" aria-live="polite"></p>
+          {% if form.phone_number.help_text %}<p class="help-text">{{ form.phone_number.help_text }}</p>{% endif %}
+          {% for error in form.phone_number.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="nin_number">
+          <label for="{{ form.nin_number.id_for_label }}">{{ form.nin_number.label }}{% if form.nin_number.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          <div class="input-with-feedback">
+            {{ form.nin_number }}
+            <span class="input-feedback-icon" id="feedback-icon-nin_number" aria-hidden="true"></span>
+          </div>
+          <p class="field-live-feedback" id="feedback-nin_number" aria-live="polite"></p>
+          {% if form.nin_number.help_text %}<p class="help-text">{{ form.nin_number.help_text }}</p>{% endif %}
+          {% for error in form.nin_number.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="date_of_birth">
+          <label for="{{ form.date_of_birth.id_for_label }}">{{ form.date_of_birth.label }}{% if form.date_of_birth.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.date_of_birth }}
+          {% if form.date_of_birth.help_text %}<p class="help-text">{{ form.date_of_birth.help_text }}</p>{% endif %}
+          {% for error in form.date_of_birth.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="email">
+          <label for="{{ form.email.id_for_label }}">{{ form.email.label }} <span class="u-text-muted">(optional)</span></label>
+          {{ form.email }}
+          {% if form.email.help_text %}<p class="help-text">{{ form.email.help_text }}</p>{% endif %}
+          {% for error in form.email.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="2" aria-labelledby="step-heading-2">
+        <h2 id="step-heading-2" class="wizard-step-title">Academic Information</h2>
+
+        <div class="form-row" data-field="institution">
+          <label for="{{ form.institution.id_for_label }}">{{ form.institution.label }}{% if form.institution.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.institution }}
+          {% if form.institution.help_text %}<p class="help-text">{{ form.institution.help_text }}</p>{% endif %}
+          {% for error in form.institution.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="course">
+          <label for="{{ form.course.id_for_label }}">{{ form.course.label }}{% if form.course.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.course }}
+          {% if form.course.help_text %}<p class="help-text">{{ form.course.help_text }}</p>{% endif %}
+          {% for error in form.course.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="faculty">
+          <label for="{{ form.faculty.id_for_label }}">{{ form.faculty.label }} <span class="u-text-muted">(optional)</span></label>
+          {{ form.faculty }}
+          {% if form.faculty.help_text %}<p class="help-text">{{ form.faculty.help_text }}</p>{% endif %}
+          {% for error in form.faculty.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="department">
+          <label for="{{ form.department.id_for_label }}">{{ form.department.label }} <span class="u-text-muted">(optional)</span></label>
+          {{ form.department }}
+          {% if form.department.help_text %}<p class="help-text">{{ form.department.help_text }}</p>{% endif %}
+          {% for error in form.department.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="level">
+          <label for="{{ form.level.id_for_label }}">{{ form.level.label }} <span class="u-text-muted">(optional)</span></label>
+          {{ form.level }}
+          {% if form.level.help_text %}<p class="help-text">{{ form.level.help_text }}</p>{% endif %}
+          {% for error in form.level.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="category">
+          <label for="{{ form.category.id_for_label }}">{{ form.category.label }}{% if form.category.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.category }}
+          {% if form.category.help_text %}<p class="help-text">{{ form.category.help_text }}</p>{% endif %}
+          {% for error in form.category.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="3" aria-labelledby="step-heading-3">
+        <h2 id="step-heading-3" class="wizard-step-title">Uploads</h2>
+
+        <div class="form-row" data-field="passport_photo">
+          <label for="{{ form.passport_photo.id_for_label }}">{{ form.passport_photo.label }}{% if form.passport_photo.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.passport_photo }}
+          <div class="upload-preview" id="preview-passport_photo" hidden>
+            <img class="upload-preview-thumb" alt="" />
+            <div class="upload-preview-meta">
+              <span class="upload-preview-name"></span>
+              <span class="upload-preview-size"></span>
+              <span class="upload-preview-status"></span>
+            </div>
+            <button type="button" class="upload-preview-remove" data-remove-for="passport_photo" aria-label="Remove selected passport photo">&times;</button>
+          </div>
+          <p class="upload-warning" id="warning-passport_photo" hidden role="alert"></p>
+          {% if form.passport_photo.help_text %}<p class="help-text">{{ form.passport_photo.help_text }}</p>{% endif %}
+          {% for error in form.passport_photo.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="receipt_image">
+          <label for="{{ form.receipt_image.id_for_label }}">{{ form.receipt_image.label }}{% if form.receipt_image.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.receipt_image }}
+          <div class="upload-preview" id="preview-receipt_image" hidden>
+            <img class="upload-preview-thumb" alt="" />
+            <div class="upload-preview-meta">
+              <span class="upload-preview-name"></span>
+              <span class="upload-preview-size"></span>
+              <span class="upload-preview-status"></span>
+            </div>
+            <button type="button" class="upload-preview-remove" data-remove-for="receipt_image" aria-label="Remove selected payment receipt">&times;</button>
+          </div>
+          <p class="upload-warning" id="warning-receipt_image" hidden role="alert"></p>
+          {% if form.receipt_image.help_text %}<p class="help-text">{{ form.receipt_image.help_text }}</p>{% endif %}
+          {% for error in form.receipt_image.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="wizard-step" data-step="4" aria-labelledby="step-heading-4">
+        <h2 id="step-heading-4" class="wizard-step-title">Review Your Details</h2>
+        <p class="help-text u-mb-2">Check everything carefully. Use Edit next to any section to make changes before you submit.</p>
+        <div id="wizard-review" class="wizard-review"></div>
+      </div>
+
+    </div>
+
+    <div class="wizard-nav">
+      <button type="button" class="btn btn-outline" id="wizard-back-btn" hidden>&larr; Back</button>
+      <button type="button" class="btn" id="wizard-next-btn" hidden>Next &rarr;</button>
+      <button type="submit" class="btn" id="wizard-submit-btn">Submit Registration</button>
+    </div>
+  </form>
+
+{% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/register.js' %}" defer></script>{% endblock %}

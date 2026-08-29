@@ -1,0 +1,24 @@
+<div>
+  {% if result %}
+    <h2>Application <span class="record">{{ result.application_number }}</span></h2>
+
+    <dl class="info-card">
+      {% if result.status == "pending" %}
+        <dd><span class="badge badge-upcoming">Status: Pending Review</span></dd>
+
+      {% elif result.status == "approved" %}
+        <dd><span class="badge badge-active">Status: Approved</span></dd>
+        <dt>Membership ID</dt>
+        <dd class="record">{{ result.member.membership_id }}</dd>
+
+      {% elif result.status == "rejected" %}
+        <dd><span class="badge badge-closed">Status: Rejected</span></dd>
+        <dt>Reason</dt>
+        <dd>{{ result.rejection_reason }}</dd>
+      {% endif %}
+    </dl>
+
+  {% else %}
+    <p class="meta">No registration record found. Double-check your details and try again.</p>
+  {% endif %}
+</div>

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ announcement.subject }}{% endblock %}
+{% block meta_description %}Details for a sent announcement.{% endblock %}
+
+{% block content %}
+<div class="container section">
+<h1>{{ announcement.subject }}</h1>
+<p class="meta"><a href="{% url 'accounts:communication_history' %}">&larr; Back to History</a></p>
+
+<div class="summary-stats">
+  <div class="summary-stat">
+    <div class="summary-stat-icon" aria-hidden="true">&#128101;</div>
+    <div class="value record">{{ announcement.recipient_count }}</div>
+    <div class="label">Recipients Targeted</div>
+  </div>
+  <div class="summary-stat">
+    <div class="summary-stat-icon" aria-hidden="true">&#9989;</div>
+    <div class="value record">{{ announcement.sent_count }}</div>
+    <div class="label">Delivered</div>
+  </div>
+  <div class="summary-stat">
+    <div class="summary-stat-icon" aria-hidden="true">&#10060;</div>
+    <div class="value record">{{ announcement.failed_count }}</div>
+    <div class="label">Failed / No Email On File</div>
+  </div>
+</div>
+
+<p>
+  <span class="status-label status-{% if announcement.status == 'sent' %}success{% elif announcement.status == 'partial' %}warning{% elif announcement.status == 'failed' %}error{% else %}neutral{% endif %}">{{ announcement.get_status_display }}</span>
+  &mdash; {{ announcement.get_delivery_method_display }} &mdash; sent by {{ announcement.created_by.get_full_name|default:announcement.created_by.username|default:"—" }} on {{ announcement.created_at|date:"d M Y, H:i" }}
+</p>
+
+<h2>Targeting</h2>
+<p>Recipient type: <strong>{{ announcement.get_recipient_type_display }}</strong></p>
+{% if announcement.recipient_filters %}
+  <div class="filter-chip-row">
+    {% if announcement.recipient_filters.faculty %}<span class="chip">Faculty: {{ announcement.recipient_filters.faculty }}</span>{% endif %}
+    {% if announcement.recipient_filters.department %}<span class="chip">Department: {{ announcement.recipient_filters.department }}</span>{% endif %}
+    {% if announcement.recipient_filters.level %}<span class="chip">Level: {{ announcement.recipient_filters.level }}</span>{% endif %}
+    {% if announcement.recipient_filters.gender %}<span class="chip">Gender: {{ announcement.recipient_filters.gender|capfirst }}</span>{% endif %}
+    {% if announcement.recipient_filters.approval_status %}<span class="chip">Status: {{ announcement.recipient_filters.approval_status|capfirst }}</span>{% endif %}
+    {% if announcement.recipient_filters.selected_member_ids %}<span class="chip">{{ announcement.recipient_filters.selected_member_ids|length }} member(s) selected directly</span>{% endif %}
+  </div>
+{% endif %}
+
+<h2>Message</h2>
+<div class="content-block">
+  <p class="u-pre-line">{{ announcement.message }}</p>
+</div>
+</div>
+{% endblock %}
