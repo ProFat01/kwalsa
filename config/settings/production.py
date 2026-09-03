@@ -16,7 +16,7 @@ DEBUG = False
 SECRET_KEY = env("SECRET_KEY")
 
 ALLOWED_HOSTS = [
-    "msaweb.pythonanywhere.com",
+    "kwalsa.pythonanywhere.com",
     "127.0.0.1",
     "localhost",
 ]  # e.g. yourusername.pythonanywhere.com
@@ -41,7 +41,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # include the scheme) or every POST (registration, voting, the contact
 # form, admin logins) fails CSRF validation in production.
 CSRF_TRUSTED_ORIGINS = [
-    "https://msaweb.pythonanywhere.com",
+    "https://kwalsa.pythonanywhere.com",
 ]  # e.g. https://yourusername.pythonanywhere.com
 
 # Parsed from DATABASE_URL, same as development.py — see that file's
