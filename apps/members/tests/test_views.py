@@ -13,7 +13,7 @@ def _registration_post_data(**overrides):
         "phone_number": "08012345678",
         "nin_number": "12345678901",
         "date_of_birth": "2002-05-14",
-        "institution": "Malam Sidi College",
+        "institution": "Gombe State University (GSU), Tudun Wada",
         "course": "Computer Science",
         "category": Member.Category.UNDERGRADUATE,
         "passport_photo": make_image("photo.png"),
@@ -80,6 +80,42 @@ class RegisterViewTests(MediaIsolatedTestCase):
         Association.objects.all().delete()
         response = self.client.get(reverse("members:register"))
         self.assertContains(response, "Registration is not currently available")
+
+    def test_register_page_lists_gombe_and_national_institutions(self):
+        response = self.client.get(reverse("members:register"))
+        # Gombe State institutions are the priority group (KWALSA is a
+        # Gombe-based association) and should render alongside the
+        # national-university group and the "Other" option.
+        self.assertContains(response, "Gombe State University (GSU), Tudun Wada")
+        self.assertContains(response, "Federal University Kashere (FUK)")
+        self.assertContains(response, "Ahmadu Bello University (ABU), Zaria")
+        self.assertContains(response, "Other (type your institution)")
+
+    def test_registration_saves_a_listed_institution(self):
+        response = self.client.post(
+            reverse("members:register"),
+            _registration_post_data(institution="Federal Polytechnic, Kaltungo"),
+        )
+        self.assertEqual(response.status_code, 302)
+        member = Member.objects.get()
+        self.assertEqual(member.institution, "Federal Polytechnic, Kaltungo")
+
+    def test_registration_via_other_saves_the_typed_institution(self):
+        response = self.client.post(
+            reverse("members:register"),
+            _registration_post_data(institution="other", institution_other="Malam Sidi College"),
+        )
+        self.assertEqual(response.status_code, 302)
+        member = Member.objects.get()
+        self.assertEqual(member.institution, "Malam Sidi College")
+
+    def test_registration_via_other_without_typed_value_fails(self):
+        response = self.client.post(
+            reverse("members:register"),
+            _registration_post_data(institution="other", institution_other=""),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Member.objects.exists())
 
 
 class StatusCheckViewTests(MediaIsolatedTestCase):

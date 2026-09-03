@@ -156,6 +156,50 @@ class ContactMessage(models.Model):
         return f"{self.subject} — {self.name}"
 
 
+class Leadership(models.Model):
+    """
+    A single leader/executive shown on the public Leadership page.
+
+    This upgrades `SiteSettings.leadership_text` (a single free-text
+    block) to per-person profiles with photos, as that field's own
+    docstring anticipated. `leadership_text` is left in place rather
+    than removed — existing associations that only ever filled in the
+    free-text block keep working unchanged — but new associations (and
+    anyone ready to move on from the text block) can use this instead.
+
+    Scoped to `Association` the same way every other tenant-specific
+    model in the project is, so each association manages its own
+    leaders without touching another association's data.
+    """
+
+    association = models.ForeignKey(
+        Association, on_delete=models.CASCADE, related_name="leaders"
+    )
+    full_name = models.CharField(max_length=255)
+    position = models.CharField(
+        max_length=255, help_text="e.g. President, Financial Secretary."
+    )
+    photo = models.ImageField(upload_to="associations/leadership/%Y/%m/", blank=True, null=True)
+    facebook_url = models.URLField(
+        blank=True, help_text="Link to this leader's Facebook profile or page, if available."
+    )
+    display_order = models.PositiveSmallIntegerField(
+        default=0, help_text="Controls ordering on the public Leadership page, lowest first."
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Only active leaders are shown on the public Leadership page.",
+    )
+
+    class Meta:
+        ordering = ["display_order", "full_name"]
+        verbose_name = "Leader"
+        verbose_name_plural = "Leadership"
+
+    def __str__(self):
+        return f"{self.full_name} — {self.position} ({self.association.short_name})"
+
+
 class SequenceCounter(models.Model):
     """
     Race-condition-safe counter backing every human-readable, sequential

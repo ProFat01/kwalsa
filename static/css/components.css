@@ -477,6 +477,54 @@ table.data-table td.is-number, table.data-table th.is-number { font-family: var(
   border-radius: var(--radius-lg);
 }
 
+/* --- Generic empty-state notice (Leadership page, etc.) ---
+   Same treatment as .no-election-notice above, under a name that
+   reads correctly wherever it's reused, not just for elections. */
+.empty-state-notice {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--slate);
+  background: var(--surface-soft);
+  border-radius: var(--radius-lg);
+}
+
+/* --- Leadership page --- */
+.leadership-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-6);
+}
+.leadership-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+.leadership-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.leadership-photo {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin: 0 auto var(--space-4);
+}
+.leadership-photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--civic-green-tint);
+  color: var(--civic-green-deep);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+}
+.leadership-name { font-weight: 600; margin: 0; }
+.leadership-position { color: var(--slate); font-size: 0.9rem; margin: var(--space-1) 0 var(--space-2); }
+.leadership-social { font-size: 0.9rem; }
+
 /* =============================================================
    Registration wizard (Stage 8: Registration Experience)
 
@@ -613,6 +661,56 @@ table.data-table td.is-number, table.data-table th.is-number { font-family: var(
 .review-fields dt { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--slate); font-weight: 600; }
 .review-fields dd { margin: 0; display: flex; align-items: center; gap: var(--space-2); word-break: break-word; }
 .review-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--line); flex-shrink: 0; }
+
+/* --- Institution combobox (register.js: setupInstitutionCombobox) ---
+   Progressive enhancement over the real #id_institution <select>,
+   which register.js hides once this is built; without JS the select
+   renders and behaves exactly like any other .form-row select. --- */
+.combobox { position: relative; }
+.combobox-input {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: var(--font-body);
+  background: var(--surface);
+  color: var(--ink);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.combobox-input:focus {
+  outline: none;
+  border-color: var(--civic-green);
+  box-shadow: 0 0 0 3px var(--civic-green-tint);
+}
+.combobox-listbox {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-1) 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+}
+.combobox-group-label {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--slate);
+  font-weight: 600;
+}
+.combobox-option { padding: var(--space-2) var(--space-3); font-size: 0.95rem; cursor: pointer; }
+.combobox-option.is-active, .combobox-option:hover { background: var(--civic-green-tint); }
+.combobox-option.is-selected { font-weight: 600; color: var(--civic-green-deep); }
+.combobox-empty { padding: var(--space-2) var(--space-3); font-size: 0.9rem; color: var(--slate); }
 
 @media (max-width: 600px) {
   .review-fields { grid-template-columns: 1fr; }

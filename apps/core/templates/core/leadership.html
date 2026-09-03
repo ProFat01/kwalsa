@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Leadership{% endblock %}
+{% block og_title %}Leadership — {{ association.name|default:"SAMS" }}{% endblock %}
+{% block meta_description %}Meet the leadership of {{ association.name|default:"SAMS" }}.{% endblock %}
+
+{% block content %}
+<div class="container section">
+  {% if not association %}
+    <div class="alert alert-info"><p>The site isn't fully configured yet.</p></div>
+  {% else %}
+    <h1>Leadership</h1>
+    <p>Meet the people leading {{ association.name }}.</p>
+
+    {% if leaders %}
+      <div class="leadership-grid">
+        {% for leader in leaders %}
+          <div class="leadership-card">
+            {% if leader.photo %}
+              <img src="{{ leader.photo.url }}" alt="{{ leader.full_name }}" class="leadership-photo">
+            {% else %}
+              <div class="leadership-photo leadership-photo-placeholder" aria-hidden="true">
+                <span>{{ leader.full_name|slice:":1" }}</span>
+              </div>
+            {% endif %}
+            <p class="leadership-name">{{ leader.full_name }}</p>
+            <p class="leadership-position">{{ leader.position }}</p>
+            {% if leader.facebook_url %}
+              <a href="{{ leader.facebook_url }}" class="leadership-social" target="_blank" rel="noopener noreferrer">Facebook</a>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state-notice">
+        <p>Leadership information for {{ association.short_name }} will be available soon.</p>
+      </div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

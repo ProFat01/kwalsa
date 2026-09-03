@@ -30,11 +30,23 @@
   var MAX_FILE_MB = 5; // mirrors apps.members.validators.validate_image_size
   var COMPRESS_TRIGGER_BYTES = 800 * 1024; // only bother compressing above ~800KB
   var STEP_TITLES = { 1: "Personal Information", 2: "Academic Information", 3: "Uploads", 4: "Review" };
+  // institution_other is validated as part of step 2 (its `required`
+  // attribute is toggled by setupInstitutionCombobox() below, so
+  // validateStep()'s normal required-field check already covers it) but
+  // deliberately left out of REVIEW_STEP_FIELDS -- its value is folded
+  // into the "institution" row on the review step instead of getting a
+  // row of its own (see fieldDisplayValue()).
   var STEP_FIELDS = {
     1: ["full_name", "phone_number", "nin_number", "date_of_birth", "gender"],
-    2: ["institution", "course", "category"],
+    2: ["institution", "institution_other", "course", "category"],
     3: ["passport_photo", "receipt_image"],
   };
+  var REVIEW_STEP_FIELDS = {
+    1: STEP_FIELDS[1],
+    2: ["institution", "course", "category"],
+    3: STEP_FIELDS[3],
+  };
+  var OTHER_INSTITUTION_VALUE = "other";
 
   var filePreviewData = {}; // fieldName -> { dataUrl, name, size }
 
@@ -277,6 +289,221 @@
   }
 
   /* ---------------------------------------------------------------
+     Institution: searchable combobox + "Other" reveal
+
+     Progressive enhancement over the real <select id="id_institution">
+     rendered by MemberRegistrationForm (see forms.py / institutions.py)
+     -- that select is what actually gets submitted; nothing here
+     changes its `name` or removes it from the form. Without JS, a
+     registrant just uses the native select (grouped Gombe State /
+     national-university <optgroup>s) and, if they pick "Other", types
+     into the always-present institution_other text field below it.
+     With JS, the select is visually replaced by a type-to-filter combo
+     input + listbox that stays in sync with it, following the WAI-ARIA
+     1.2 "combobox with list autocomplete" pattern.
+     ------------------------------------------------------------- */
+
+  function setupInstitutionCombobox() {
+    var select = fieldEl("institution");
+    if (!select) return;
+
+    var otherRow = document.querySelector('[data-field="institution_other"]');
+    var otherInput = fieldEl("institution_other");
+
+    function syncOtherVisibility() {
+      var isOther = select.value === OTHER_INSTITUTION_VALUE;
+      if (otherRow) otherRow.hidden = !isOther;
+      if (otherInput) otherInput.required = isOther;
+    }
+    select.addEventListener("change", syncOtherVisibility);
+    syncOtherVisibility();
+
+    // Collect (value, label, group) from the select's own <option>s /
+    // <optgroup>s, so the combobox's option list can never drift out of
+    // sync with what the server actually accepts.
+    var entries = [];
+    Array.prototype.forEach.call(select.children, function (node) {
+      if (node.tagName === "OPTGROUP") {
+        Array.prototype.forEach.call(node.children, function (opt) {
+          if (opt.value) entries.push({ value: opt.value, label: opt.textContent, group: node.label });
+        });
+      } else if (node.tagName === "OPTION" && node.value) {
+        entries.push({ value: node.value, label: node.textContent, group: null });
+      }
+    });
+    if (!entries.length) return;
+
+    var label = document.querySelector('label[for="' + select.id + '"]');
+
+    var wrap = document.createElement("div");
+    wrap.className = "combobox";
+
+    var input = document.createElement("input");
+    input.type = "text";
+    input.className = "combobox-input";
+    input.id = "institution-combo-input";
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-expanded", "false");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-controls", "institution-listbox");
+    input.setAttribute("autocomplete", "off");
+    input.placeholder = "Type to search institutions\u2026";
+
+    var listbox = document.createElement("ul");
+    listbox.id = "institution-listbox";
+    listbox.className = "combobox-listbox";
+    listbox.setAttribute("role", "listbox");
+    listbox.hidden = true;
+
+    function currentLabel() {
+      var opt = select.options[select.selectedIndex];
+      return opt && opt.value ? opt.text : "";
+    }
+
+    function renderOptions(filterText) {
+      listbox.innerHTML = "";
+      var q = (filterText || "").trim().toLowerCase();
+      var lastGroup = null;
+      var shown = 0;
+      entries.forEach(function (entry) {
+        if (q && entry.label.toLowerCase().indexOf(q) === -1) return;
+        if (entry.group && entry.group !== lastGroup) {
+          var groupLi = document.createElement("li");
+          groupLi.className = "combobox-group-label";
+          groupLi.setAttribute("role", "presentation");
+          groupLi.textContent = entry.group;
+          listbox.appendChild(groupLi);
+          lastGroup = entry.group;
+        }
+        var li = document.createElement("li");
+        li.id = "institution-option-" + shown;
+        li.className = "combobox-option";
+        li.setAttribute("role", "option");
+        li.setAttribute("data-value", entry.value);
+        li.textContent = entry.label;
+        if (entry.value === select.value) {
+          li.setAttribute("aria-selected", "true");
+          li.classList.add("is-selected");
+        }
+        listbox.appendChild(li);
+        shown += 1;
+      });
+      if (!shown) {
+        var empty = document.createElement("li");
+        empty.className = "combobox-empty";
+        empty.setAttribute("role", "presentation");
+        empty.textContent = "No matches \u2014 choose \u201cOther\u201d to enter it manually.";
+        listbox.appendChild(empty);
+      }
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function openListbox(filterText) {
+      renderOptions(filterText);
+      listbox.hidden = false;
+      input.setAttribute("aria-expanded", "true");
+    }
+
+    function closeListbox() {
+      listbox.hidden = true;
+      input.setAttribute("aria-expanded", "false");
+      input.removeAttribute("aria-activedescendant");
+    }
+
+    function chooseEntry(value, text) {
+      select.value = value;
+      input.value = text;
+      closeListbox();
+      syncOtherVisibility();
+      // Real change event (not just the value assignment above) so
+      // anything else listening to the select -- step validation,
+      // review-step rendering -- sees the update exactly as if a person
+      // had picked it from the native control.
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      if (value === OTHER_INSTITUTION_VALUE && otherInput) otherInput.focus();
+    }
+
+    function setActiveOption(index) {
+      var options = listbox.querySelectorAll('[role="option"]');
+      Array.prototype.forEach.call(options, function (opt, i) {
+        opt.classList.toggle("is-active", i === index);
+      });
+      var active = options[index];
+      if (active) {
+        input.setAttribute("aria-activedescendant", active.id);
+        active.scrollIntoView({ block: "nearest" });
+      } else {
+        input.removeAttribute("aria-activedescendant");
+      }
+      return options;
+    }
+
+    input.addEventListener("focus", function () {
+      openListbox("");
+    });
+
+    input.addEventListener("input", function () {
+      openListbox(input.value);
+    });
+
+    input.addEventListener("keydown", function (event) {
+      var options = listbox.querySelectorAll('[role="option"]');
+      var activeId = input.getAttribute("aria-activedescendant");
+      var activeIndex = -1;
+      for (var i = 0; i < options.length; i += 1) {
+        if (options[i].id === activeId) { activeIndex = i; break; }
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        if (listbox.hidden) { openListbox(input.value); return; }
+        setActiveOption(Math.min(options.length - 1, activeIndex + 1));
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        if (listbox.hidden) { openListbox(input.value); return; }
+        setActiveOption(Math.max(0, activeIndex - 1));
+      } else if (event.key === "Enter") {
+        if (!listbox.hidden && activeIndex >= 0) {
+          event.preventDefault();
+          var chosen = options[activeIndex];
+          chooseEntry(chosen.getAttribute("data-value"), chosen.textContent);
+        }
+      } else if (event.key === "Escape") {
+        if (!listbox.hidden) {
+          event.preventDefault();
+          closeListbox();
+        }
+      } else if (event.key === "Tab") {
+        closeListbox();
+      }
+    });
+
+    listbox.addEventListener("mousedown", function (event) {
+      var option = event.target.closest('[role="option"]');
+      if (!option) return;
+      event.preventDefault();
+      chooseEntry(option.getAttribute("data-value"), option.textContent);
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!wrap.contains(event.target)) closeListbox();
+    });
+
+    input.value = currentLabel();
+
+    wrap.appendChild(input);
+    wrap.appendChild(listbox);
+    select.parentNode.insertBefore(wrap, select);
+
+    // The real select stays in the DOM (still submitted, still what
+    // validateStep()/fieldDisplayValue() read from) but is visually
+    // replaced by the combobox above; screen readers get the combobox's
+    // own role="combobox"/role="listbox" semantics instead.
+    select.hidden = true;
+    if (label) label.setAttribute("for", input.id);
+  }
+
+  /* ---------------------------------------------------------------
      Wizard: steps, progress, per-step validation, review, submit
      ------------------------------------------------------------- */
 
@@ -350,7 +577,18 @@
 
         if (errorMessage) {
           var row = addFieldError(fieldName, errorMessage);
-          if (row && !firstInvalidRow) firstInvalidRow = { row: row, el: el };
+          if (row && !firstInvalidRow) {
+            // The institution <select> is visually hidden once
+            // setupInstitutionCombobox() replaces it (see above) --
+            // focus its visible combobox input instead so keyboard/
+            // focus behavior matches what's on screen.
+            var focusEl = el;
+            if (fieldName === "institution") {
+              var comboInput = byId("institution-combo-input");
+              if (comboInput) focusEl = comboInput;
+            }
+            firstInvalidRow = { row: row, el: focusEl };
+          }
         }
       });
 
@@ -358,6 +596,14 @@
     }
 
     function fieldDisplayValue(fieldName) {
+      if (fieldName === "institution") {
+        var institutionSelect = fieldEl("institution");
+        if (institutionSelect && institutionSelect.value === OTHER_INSTITUTION_VALUE) {
+          var other = fieldEl("institution_other");
+          var typed = other ? other.value.trim() : "";
+          return typed || "Not provided";
+        }
+      }
       var el = fieldEl(fieldName);
       if (!el) return "Not provided";
       if (el.tagName === "SELECT") {
@@ -400,7 +646,7 @@
 
         var dl = document.createElement("dl");
         dl.className = "review-fields";
-        STEP_FIELDS[stepNumber].forEach(function (fieldName) {
+        REVIEW_STEP_FIELDS[stepNumber].forEach(function (fieldName) {
           var dt = document.createElement("dt");
           dt.textContent = fieldLabel(fieldName);
           var dd = document.createElement("dd");
@@ -524,6 +770,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     setupLiveValidation();
     setupUploads();
+    setupInstitutionCombobox();
     initWizard();
   });
 })();

@@ -64,6 +64,7 @@
     <div class="content-block">
       <h2>Leadership</h2>
       <p>{{ site_settings.leadership_text|default:"This section is awaiting content from the association's administrators." }}</p>
+      <p><a href="{% url 'core:leadership' %}">Meet the leadership team &rarr;</a></p>
     </div>
 
     {% if site_settings.donation_details %}

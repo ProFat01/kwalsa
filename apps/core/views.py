@@ -12,7 +12,7 @@ from apps.analytics import services as analytics_services
 from apps.elections.models import Election
 
 from .forms import ContactForm
-from .models import Association
+from .models import Association, Leadership
 
 
 def _default_association():
@@ -69,6 +69,21 @@ def about_view(request):
     association = _default_association()
     site_settings = getattr(association, "site_settings", None) if association else None
     return render(request, "core/about.html", {"association": association, "site_settings": site_settings})
+
+
+def leadership_view(request):
+    association = _default_association()
+    site_settings = getattr(association, "site_settings", None) if association else None
+    leaders = (
+        Leadership.objects.filter(association=association, is_active=True)
+        if association is not None
+        else Leadership.objects.none()
+    )
+    return render(
+        request,
+        "core/leadership.html",
+        {"association": association, "site_settings": site_settings, "leaders": leaders},
+    )
 
 
 def contact_view(request):

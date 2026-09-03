@@ -11,7 +11,7 @@ def _valid_form_data(**overrides):
         "phone_number": "08012345678",
         "nin_number": "12345678901",
         "date_of_birth": "2002-05-14",
-        "institution": "Malam Sidi College",
+        "institution": "Gombe State University (GSU), Tudun Wada",
         "course": "Computer Science",
         "category": Member.Category.UNDERGRADUATE,
     }
@@ -121,3 +121,37 @@ class MemberRegistrationFormTests(MediaIsolatedTestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn("gender", form.errors)
+
+    def test_selecting_a_listed_institution_saves_it_verbatim(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(institution="Federal University Kashere (FUK)"), files=self._files()
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        application = form.save(association=self.association)
+        self.assertEqual(application.member.institution, "Federal University Kashere (FUK)")
+
+    def test_selecting_other_and_typing_a_custom_institution_saves_the_typed_value(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(institution="other", institution_other="Kwalsa Community College"),
+            files=self._files(),
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        application = form.save(association=self.association)
+        self.assertEqual(application.member.institution, "Kwalsa Community College")
+
+    def test_selecting_other_without_typing_anything_is_rejected(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(institution="other", institution_other=""), files=self._files()
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("institution_other", form.errors)
+
+    def test_arbitrary_institution_text_not_in_the_seed_list_is_rejected(self):
+        # Anything not in institutions.INSTITUTION_CHOICES and not routed
+        # through the "other" + institution_other pair must fail --
+        # otherwise the seeded dropdown would be trivially bypassable.
+        form = MemberRegistrationForm(
+            data=_valid_form_data(institution="Some Made Up University"), files=self._files()
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("institution", form.errors)

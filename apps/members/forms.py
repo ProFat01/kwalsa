@@ -13,6 +13,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
+from .institutions import INSTITUTION_CHOICES, OTHER_INSTITUTION_VALUE
 from .models import Member, RegistrationApplication
 from .services import BY_MEMBERSHIP_ID, BY_NIN, CREDENTIAL_METHOD_CHOICES, find_member_by_credentials
 from .validators import validate_image_size
@@ -42,6 +43,30 @@ class MemberRegistrationForm(forms.ModelForm):
     gender = forms.ChoiceField(
         choices=[("", "---")] + list(Member.Gender.choices),
         required=False,
+    )
+
+    # Institution is presented as a searchable dropdown seeded from
+    # institutions.py (Gombe State institutions first, then well-known
+    # national universities), with an "Other" option at the end. Declared
+    # explicitly for the same reason gender is above: choices come from a
+    # module constant rather than Django's ModelForm auto-generation
+    # (which would otherwise just render a plain <input type="text">
+    # for a CharField). Member.institution itself is untouched -- still
+    # a plain CharField -- so this is presentation-only; see clean()
+    # below for how the final string is resolved.
+    institution = forms.ChoiceField(
+        choices=INSTITUTION_CHOICES,
+        required=True,
+        error_messages={"invalid_choice": "Select an institution from the list, or choose Other."},
+    )
+    # Not a Member field (like receipt_image above) -- only used when
+    # institution == "other". Required=False at the field level because
+    # its actual requiredness is conditional; enforced explicitly in
+    # clean() instead.
+    institution_other = forms.CharField(
+        required=False,
+        max_length=255,
+        label="Type your institution",
     )
 
     class Meta:
@@ -76,7 +101,7 @@ class MemberRegistrationForm(forms.ModelForm):
     # analytics, election eligibility) — see forms.py class comment above.
     field_order = [
         "full_name", "phone_number", "nin_number", "date_of_birth", "gender", "email",
-        "institution", "course", "faculty", "department", "level",
+        "institution", "institution_other", "course", "faculty", "department", "level",
         "category", "passport_photo", "receipt_image",
     ]
 
@@ -91,6 +116,22 @@ class MemberRegistrationForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+
+        # Resolve the institution dropdown's "Other" sentinel into the
+        # actual string Member.institution will store. Must happen here
+        # (form-level clean, before ModelForm._post_clean() calls
+        # construct_instance()) so the resolved value -- not the "other"
+        # sentinel -- is what ends up on the model instance. See
+        # institutions.py for why "other" can never collide with a real
+        # institution name.
+        institution = cleaned_data.get("institution")
+        if institution == OTHER_INSTITUTION_VALUE:
+            typed_institution = (cleaned_data.get("institution_other") or "").strip()
+            if not typed_institution:
+                self.add_error("institution_other", "Please type your institution.")
+            else:
+                cleaned_data["institution"] = typed_institution
+
         phone = cleaned_data.get("phone_number")
         nin = cleaned_data.get("nin_number")
 

@@ -111,6 +111,13 @@
           {% for error in form.institution.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
         </div>
 
+        <div class="form-row" data-field="institution_other">
+          <label for="{{ form.institution_other.id_for_label }}">{{ form.institution_other.label }}</label>
+          {{ form.institution_other }}
+          <p class="help-text">Only needed if you picked &ldquo;Other&rdquo; above.</p>
+          {% for error in form.institution_other.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
         <div class="form-row" data-field="course">
           <label for="{{ form.course.id_for_label }}">{{ form.course.label }}{% if form.course.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
           {{ form.course }}

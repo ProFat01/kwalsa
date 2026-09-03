@@ -43,6 +43,7 @@
       {% url 'members:portal_card' as url_portal_card %}
       {% url 'members:portal_logout' as url_portal_logout %}
       {% url 'elections:election_list' as url_elections %}
+      {% url 'core:leadership' as url_leadership %}
       {% url 'core:about' as url_about %}
       {% url 'core:contact' as url_contact %}
       <nav aria-label="Primary" id="primary-nav-wrapper">
@@ -56,6 +57,7 @@
             <li><a href="{{ url_status_check }}" class="{% if request.path == url_status_check %}is-active{% endif %}" {% if request.path == url_status_check %}aria-current="page"{% endif %}>Check Status</a></li>
           {% endif %}
           <li><a href="{{ url_elections }}" class="{% if request.path == url_elections %}is-active{% endif %}" {% if request.path == url_elections %}aria-current="page"{% endif %}>Elections</a></li>
+          <li><a href="{{ url_leadership }}" class="{% if request.path == url_leadership %}is-active{% endif %}" {% if request.path == url_leadership %}aria-current="page"{% endif %}>Leadership</a></li>
           <li><a href="{{ url_about }}" class="{% if request.path == url_about %}is-active{% endif %}" {% if request.path == url_about %}aria-current="page"{% endif %}>About</a></li>
           <li><a href="{{ url_contact }}" class="{% if request.path == url_contact %}is-active{% endif %}" {% if request.path == url_contact %}aria-current="page"{% endif %}>Contact</a></li>
           {% if request.session.portal_member_id %}
@@ -110,6 +112,7 @@
         <p><a href="{% url 'members:register' %}">Register</a></p>
         <p><a href="{% url 'members:status_check' %}">Check Status</a></p>
         <p><a href="{% url 'elections:election_list' %}">Elections &amp; Results</a></p>
+        <p><a href="{% url 'core:leadership' %}">Leadership</a></p>
         {% if site_settings.donation_details %}<p><a href="{% url 'core:home' %}#donate">Donate</a></p>{% endif %}
       </div>
       <div class="footer-contact">
