@@ -252,6 +252,25 @@ class RegistrationApplication(models.Model):
         null=True,
         blank=True,
     )
+    # Same nullable/deletable shape as receipt_image above, but a
+    # different lifecycle: an indigene verification image is only ever
+    # needed *during admin review before approval* -- see
+    # clear_indigene_image() below and its call site in
+    # members/signals.py::_sync_member_on_review, which deletes it once
+    # (and only once) approval has actually succeeded. Never publicly
+    # exposed: nothing in the public-facing templates/views renders this
+    # field, so admin.py's staff-only RegistrationApplicationAdmin is the
+    # only place it's ever displayed.
+    indigene_image = models.ImageField(
+        upload_to="members/indigene/%Y/%m/",
+        validators=[validate_image_size],
+        null=True,
+        blank=True,
+        help_text=(
+            "Used only by association administrators to verify indigene status "
+            "before approval. Deleted automatically once the application is approved."
+        ),
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     rejection_reason = models.TextField(blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
@@ -298,6 +317,26 @@ class RegistrationApplication(models.Model):
             self.receipt_image.delete(save=False)
             self.receipt_image = None
             self.save(update_fields=["receipt_image"])
+
+    def clear_indigene_image(self):
+        """
+        Deletes the stored indigene verification image and clears the
+        field, the same delete-then-save shape as clear_receipt() above.
+
+        Unlike clear_receipt(), this is called from exactly one place --
+        members/signals.py::_sync_member_on_review, and only in the
+        APPROVED branch, after member.save() has already succeeded (see
+        that signal's docstring for the ordering rationale). A rejection
+        does not clear this field: the brief this was built against only
+        calls for deletion "after successful approval", so a rejected
+        (and possibly reapplying) applicant's verification image is left
+        alone rather than assumed to need the same treatment as the
+        payment receipt.
+        """
+        if self.indigene_image:
+            self.indigene_image.delete(save=False)
+            self.indigene_image = None
+            self.save(update_fields=["indigene_image"])
 
 
 class AlumniRecord(models.Model):

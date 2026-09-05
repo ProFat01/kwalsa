@@ -30,16 +30,17 @@
   var MAX_FILE_MB = 5; // mirrors apps.members.validators.validate_image_size
   var COMPRESS_TRIGGER_BYTES = 800 * 1024; // only bother compressing above ~800KB
   var STEP_TITLES = { 1: "Personal Information", 2: "Academic Information", 3: "Uploads", 4: "Review" };
-  // institution_other is validated as part of step 2 (its `required`
-  // attribute is toggled by setupInstitutionCombobox() below, so
-  // validateStep()'s normal required-field check already covers it) but
-  // deliberately left out of REVIEW_STEP_FIELDS -- its value is folded
-  // into the "institution" row on the review step instead of getting a
+  // institution_other/course_other are validated as part of step 2
+  // (their `required` attribute is toggled by setupInstitutionCombobox()
+  // / setupCourseOtherToggle() below, so validateStep()'s normal
+  // required-field check already covers them) but deliberately left out
+  // of REVIEW_STEP_FIELDS -- their value is folded into the
+  // "institution"/"course" row on the review step instead of getting a
   // row of its own (see fieldDisplayValue()).
   var STEP_FIELDS = {
     1: ["full_name", "phone_number", "nin_number", "date_of_birth", "gender"],
-    2: ["institution", "institution_other", "course", "category"],
-    3: ["passport_photo", "receipt_image"],
+    2: ["institution", "institution_other", "course", "course_other", "category"],
+    3: ["passport_photo", "receipt_image", "indigene_image"],
   };
   var REVIEW_STEP_FIELDS = {
     1: STEP_FIELDS[1],
@@ -47,6 +48,7 @@
     3: STEP_FIELDS[3],
   };
   var OTHER_INSTITUTION_VALUE = "other";
+  var OTHER_COURSE_VALUE = "other";
 
   var filePreviewData = {}; // fieldName -> { dataUrl, name, size }
 
@@ -272,7 +274,7 @@
   }
 
   function setupUploads() {
-    ["passport_photo", "receipt_image"].forEach(function (fieldName) {
+    ["passport_photo", "receipt_image", "indigene_image"].forEach(function (fieldName) {
       var input = fieldEl(fieldName);
       if (input) input.addEventListener("change", function () { handleFileChange(fieldName); });
 
@@ -286,6 +288,30 @@
         });
       }
     });
+  }
+
+  /* ---------------------------------------------------------------
+     Course: plain "Other" reveal (no combobox -- the course list is
+     short enough that a native grouped <select id="id_course"> is fine
+     on its own; see forms.py / courses.py for where the options come
+     from). Same show/hide + required-toggle shape as institution's
+     syncOtherVisibility(), just without the search-combobox layer.
+     ------------------------------------------------------------- */
+
+  function setupCourseOtherToggle() {
+    var select = fieldEl("course");
+    if (!select) return;
+
+    var otherRow = document.querySelector('[data-field="course_other"]');
+    var otherInput = fieldEl("course_other");
+
+    function syncOtherVisibility() {
+      var isOther = select.value === OTHER_COURSE_VALUE;
+      if (otherRow) otherRow.hidden = !isOther;
+      if (otherInput) otherInput.required = isOther;
+    }
+    select.addEventListener("change", syncOtherVisibility);
+    syncOtherVisibility();
   }
 
   /* ---------------------------------------------------------------
@@ -604,6 +630,14 @@
           return typed || "Not provided";
         }
       }
+      if (fieldName === "course") {
+        var courseSelect = fieldEl("course");
+        if (courseSelect && courseSelect.value === OTHER_COURSE_VALUE) {
+          var otherCourse = fieldEl("course_other");
+          var typedCourse = otherCourse ? otherCourse.value.trim() : "";
+          return typedCourse || "Not provided";
+        }
+      }
       var el = fieldEl(fieldName);
       if (!el) return "Not provided";
       if (el.tagName === "SELECT") {
@@ -771,6 +805,7 @@
     setupLiveValidation();
     setupUploads();
     setupInstitutionCombobox();
+    setupCourseOtherToggle();
     initWizard();
   });
 })();

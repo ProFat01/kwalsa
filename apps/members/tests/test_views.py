@@ -18,6 +18,7 @@ def _registration_post_data(**overrides):
         "category": Member.Category.UNDERGRADUATE,
         "passport_photo": make_image("photo.png"),
         "receipt_image": make_image("receipt.png"),
+        "indigene_image": make_image("indigene.png"),
     }
     data.update(overrides)
     return data
@@ -116,6 +117,44 @@ class RegisterViewTests(MediaIsolatedTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertFalse(Member.objects.exists())
+
+    def test_register_page_lists_grouped_course_choices(self):
+        response = self.client.get(reverse("members:register"))
+        self.assertContains(response, "Computer Science")
+        self.assertContains(response, "Electrical Engineering")
+        self.assertContains(response, "Other (type your course)")
+
+    def test_registration_saves_a_listed_course(self):
+        response = self.client.post(
+            reverse("members:register"),
+            _registration_post_data(course="Biology"),
+        )
+        self.assertEqual(response.status_code, 302)
+        member = Member.objects.get()
+        self.assertEqual(member.course, "Biology")
+
+    def test_registration_via_other_saves_the_typed_course(self):
+        response = self.client.post(
+            reverse("members:register"),
+            _registration_post_data(course="other", course_other="Custom Diploma Programme"),
+        )
+        self.assertEqual(response.status_code, 302)
+        member = Member.objects.get()
+        self.assertEqual(member.course, "Custom Diploma Programme")
+
+    def test_registration_via_other_course_without_typed_value_fails(self):
+        response = self.client.post(
+            reverse("members:register"),
+            _registration_post_data(course="other", course_other=""),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Member.objects.exists())
+
+    def test_registration_stores_indigene_image_on_the_application(self):
+        response = self.client.post(reverse("members:register"), _registration_post_data())
+        self.assertEqual(response.status_code, 302)
+        application = RegistrationApplication.objects.get()
+        self.assertTrue(application.indigene_image)
 
 
 class StatusCheckViewTests(MediaIsolatedTestCase):

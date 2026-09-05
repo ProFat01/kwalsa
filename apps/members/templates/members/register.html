@@ -125,6 +125,13 @@
           {% for error in form.course.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
         </div>
 
+        <div class="form-row" data-field="course_other">
+          <label for="{{ form.course_other.id_for_label }}">{{ form.course_other.label }}</label>
+          {{ form.course_other }}
+          <p class="help-text">Only needed if you picked &ldquo;Other&rdquo; above.</p>
+          {% for error in form.course_other.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
         <div class="form-row" data-field="faculty">
           <label for="{{ form.faculty.id_for_label }}">{{ form.faculty.label }} <span class="u-text-muted">(optional)</span></label>
           {{ form.faculty }}
@@ -189,6 +196,23 @@
           <p class="upload-warning" id="warning-receipt_image" hidden role="alert"></p>
           {% if form.receipt_image.help_text %}<p class="help-text">{{ form.receipt_image.help_text }}</p>{% endif %}
           {% for error in form.receipt_image.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row" data-field="indigene_image">
+          <label for="{{ form.indigene_image.id_for_label }}">{{ form.indigene_image.label }}{% if form.indigene_image.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
+          {{ form.indigene_image }}
+          <div class="upload-preview" id="preview-indigene_image" hidden>
+            <img class="upload-preview-thumb" alt="" />
+            <div class="upload-preview-meta">
+              <span class="upload-preview-name"></span>
+              <span class="upload-preview-size"></span>
+              <span class="upload-preview-status"></span>
+            </div>
+            <button type="button" class="upload-preview-remove" data-remove-for="indigene_image" aria-label="Remove selected indigene verification image">&times;</button>
+          </div>
+          <p class="upload-warning" id="warning-indigene_image" hidden role="alert"></p>
+          {% if form.indigene_image.help_text %}<p class="help-text">{{ form.indigene_image.help_text }}</p>{% endif %}
+          {% for error in form.indigene_image.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
         </div>
       </div>
 

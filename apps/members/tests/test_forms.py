@@ -25,7 +25,11 @@ class MemberRegistrationFormTests(MediaIsolatedTestCase):
         cls.association = Association.objects.create(name="Malam Sidi Students Association", short_name="MSA")
 
     def _files(self):
-        return {"passport_photo": make_image("photo.png"), "receipt_image": make_image("receipt.png")}
+        return {
+            "passport_photo": make_image("photo.png"),
+            "receipt_image": make_image("receipt.png"),
+            "indigene_image": make_image("indigene.png"),
+        }
 
     def test_successful_registration_creates_member_and_pending_application(self):
         form = MemberRegistrationForm(data=_valid_form_data(), files=self._files())
@@ -155,3 +159,52 @@ class MemberRegistrationFormTests(MediaIsolatedTestCase):
         )
         self.assertFalse(form.is_valid())
         self.assertIn("institution", form.errors)
+
+    # -----------------------------------------------------------------
+    # Course (courses.py) -- same "grouped choices + Other" pattern as
+    # institution above.
+    # -----------------------------------------------------------------
+
+    def test_selecting_a_listed_course_saves_it_verbatim(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(course="Electrical Engineering"), files=self._files()
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        application = form.save(association=self.association)
+        self.assertEqual(application.member.course, "Electrical Engineering")
+
+    def test_selecting_other_and_typing_a_custom_course_saves_the_typed_value(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(course="other", course_other="Underwater Basket Weaving"),
+            files=self._files(),
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        application = form.save(association=self.association)
+        self.assertEqual(application.member.course, "Underwater Basket Weaving")
+
+    def test_selecting_other_course_without_typing_anything_is_rejected(self):
+        form = MemberRegistrationForm(
+            data=_valid_form_data(course="other", course_other=""), files=self._files()
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("course_other", form.errors)
+
+    def test_arbitrary_course_text_not_in_the_seed_list_is_rejected(self):
+        # Same anti-bypass rule as institution: anything not in
+        # courses.COURSE_CHOICES and not routed through "other" +
+        # course_other must fail.
+        form = MemberRegistrationForm(
+            data=_valid_form_data(course="Some Made Up Course"), files=self._files()
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("course", form.errors)
+
+    def test_form_renders_grouped_course_choices_and_other_option(self):
+        form = MemberRegistrationForm()
+        rendered = str(form)
+        self.assertIn("Computer Science", rendered)
+        self.assertIn("Electrical Engineering", rendered)
+        self.assertIn("Other (type your course)", rendered)
+        # Grouped choices render as <optgroup> labels in the widget.
+        self.assertIn("Computing and ICT", rendered)
+        self.assertIn("Engineering and Technology", rendered)

@@ -13,6 +13,15 @@ fires for every transition out of Pending, so there's exactly one place
 that does it rather than relying on every call site (admin action, future
 API) to remember.
 
+Also deletes the indigene verification image, but only on the APPROVED
+branch and only after member.save() has already succeeded (see that
+branch below) — unlike the receipt, a rejection does not clear it. This
+ordering matters: Django admin's add/change views already wrap the whole
+request in transaction.atomic(), so if member.save() raises here, that
+atomic block rolls back the RegistrationApplication.status write too and
+clear_indigene_image() never runs — a failed approval can never
+prematurely delete the verification image.
+
 v1.1: After approval is committed, _sync_member_on_review also triggers
 the approval welcome email (Feature 3). The email is sent AFTER the
 transaction commits and is wrapped in its own try/except inside
@@ -70,6 +79,7 @@ def _sync_member_on_review(sender, instance, created, **kwargs):
         # member.
         member.save(update_fields=["approval_status"])
         instance.clear_receipt()  # PART 6: receipt is no longer needed once a decision exists
+        instance.clear_indigene_image()  # only on APPROVED — see module docstring above
 
         # v1.1 — Feature 3: send welcome email if the member provided one.
         # Imported here (not at module level) to match the existing cross-app

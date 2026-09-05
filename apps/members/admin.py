@@ -113,13 +113,18 @@ class RegistrationApplicationAdmin(admin.ModelAdmin):
     list_filter = ("status", "member__association")
     search_fields = ("application_number", "member__full_name", "member__phone_number")
     autocomplete_fields = ("member",)
-    readonly_fields = ("application_number", "submitted_at", "reviewed_at", "reviewed_by", "receipt_preview")
+    readonly_fields = (
+        "application_number", "submitted_at", "reviewed_at", "reviewed_by",
+        "receipt_preview", "indigene_image_preview",
+    )
     list_select_related = ("member", "member__association", "reviewed_by")
     actions = ["approve_applications", "clear_receipt_images"]
 
     # Section names/order match the v1.2 brief's "Application Detail
     # Page" grouping (Application Details / Payment Information /
-    # Registration Status); fields inside each section are unchanged.
+    # Registration Status), plus an "Indigene Verification" section for
+    # the staff-only verification image. Fields inside the pre-existing
+    # sections are unchanged.
     fieldsets = (
         ("Application Details", {"fields": ("application_number", "member", "submitted_at")}),
         # PART 5: receipt is shown here for review. PART 6: it's only
@@ -128,6 +133,13 @@ class RegistrationApplicationAdmin(admin.ModelAdmin):
         # members/signals.py), so this preview naturally disappears once
         # a decision has been made.
         ("Payment Information", {"fields": ("receipt_image", "receipt_preview")}),
+        # Staff-only, not publicly exposed anywhere else. Visible for as
+        # long as the application is pending; deleted automatically (see
+        # RegistrationApplication.clear_indigene_image()) the moment this
+        # application is *approved* — a rejection leaves it in place, so
+        # this preview only disappears after approval, unlike the receipt
+        # above which disappears after either decision.
+        ("Indigene Verification", {"fields": ("indigene_image", "indigene_image_preview")}),
         ("Registration Status", {"fields": ("status", "rejection_reason", "reviewed_at", "reviewed_by")}),
     )
 
@@ -144,6 +156,17 @@ class RegistrationApplicationAdmin(admin.ModelAdmin):
             '<img src="{0}" style="max-height: 220px; max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">'
             "</a>",
             obj.receipt_image.url,
+        )
+
+    @admin.display(description="Indigene verification image")
+    def indigene_image_preview(self, obj):
+        if not obj.indigene_image:
+            return "— (no image on file; already cleared if this application has been approved)"
+        return format_html(
+            '<a href="{0}" target="_blank" rel="noopener">'
+            '<img src="{0}" style="max-height: 220px; max-width: 100%; border: 1px solid #ddd; border-radius: 4px;">'
+            "</a>",
+            obj.indigene_image.url,
         )
 
     def save_model(self, request, obj, form, change):

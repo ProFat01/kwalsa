@@ -22,6 +22,10 @@ the institution long known as "Gombe State University of Science and
 Technology, Kumo" entered a PPP with Lincoln University College of
 Malaysia in 2022 and, as of the 2025/2026 session, now admits students
 as Lincoln University Kumo -- listed under its current name below.
+
+Same naming-currency note applies to Bauchi's state university: it was
+renamed Sa'adu Zungur University (from Bauchi State University) and is
+listed under that current name in NATIONAL_UNIVERSITIES.
 """
 
 # Ordered for the UI: Gombe State institutions first (KWALSA's home
@@ -55,6 +59,7 @@ NATIONAL_UNIVERSITIES = [
     "Lagos State University (LASU)",
     "Nnamdi Azikiwe University, Awka (UNIZIK)",
     "Obafemi Awolowo University (OAU), Ile-Ife",
+    "Sa'adu Zungur University (formerly Bauchi State University)",
     "University of Abuja",
     "University of Benin (UNIBEN)",
     "University of Calabar (UNICAL)",

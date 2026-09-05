@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
@@ -111,6 +112,125 @@ class ApprovalWorkflowTests(MediaIsolatedTestCase):
         application.save()  # status unchanged this time
         member.refresh_from_db()
         self.assertEqual(member.membership_id, first_membership_id)
+
+
+class IndigeneVerificationImageTests(MediaIsolatedTestCase):
+    """
+    Covers the indigene verification image lifecycle: uploaded at
+    registration, retained while pending, reviewable by staff, deleted
+    (file + field) only after a successful approval, and never
+    prematurely deleted if the approval operation itself fails.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.association = Association.objects.create(name="Malam Sidi Students Association", short_name="MSA")
+
+    def _make_application(self, **member_overrides):
+        defaults = dict(
+            association=self.association, full_name="Test Member", phone_number="08012345678",
+            nin_number="12345678901", date_of_birth="2001-01-01", institution="X", course="Y",
+            category=Member.Category.UNDERGRADUATE,
+        )
+        defaults.update(member_overrides)
+        member = Member.objects.create(passport_photo=make_image("p.png"), **defaults)
+        application = RegistrationApplication.objects.create(
+            member=member, receipt_image=make_image("r.png"), indigene_image=make_image("indigene.png"),
+        )
+        return member, application
+
+    def test_indigene_image_stored_on_the_application_at_registration(self):
+        member, application = self._make_application()
+        self.assertTrue(application.indigene_image)
+        self.assertTrue(os.path.exists(application.indigene_image.path))
+
+    def test_pending_application_retains_the_indigene_image(self):
+        member, application = self._make_application()
+        application.refresh_from_db()
+        self.assertTrue(application.indigene_image)
+        self.assertTrue(os.path.exists(application.indigene_image.path))
+
+    def test_authorized_admin_can_access_the_indigene_image(self):
+        """
+        The image is exposed to staff via the existing
+        RegistrationApplicationAdmin change page, gated by Django's own
+        admin authentication/permissions — nothing here makes it
+        publicly reachable.
+        """
+        from django.contrib.auth import get_user_model
+
+        member, application = self._make_application()
+        User = get_user_model()
+        admin_user = User.objects.create_superuser(
+            username="reviewer", email="reviewer@example.com", password="pass12345",
+        )
+        self.client.force_login(admin_user)
+        response = self.client.get(
+            reverse("admin:members_registrationapplication_change", args=[application.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Indigene Verification")
+
+    def test_indigene_image_deleted_from_disk_after_successful_approval(self):
+        member, application = self._make_application()
+        indigene_path = application.indigene_image.path
+        self.assertTrue(os.path.exists(indigene_path))
+
+        application.status = RegistrationApplication.Status.APPROVED
+        application.save()
+        application.refresh_from_db()
+
+        self.assertFalse(application.indigene_image)
+        self.assertFalse(os.path.exists(indigene_path))
+
+    def test_indigene_image_field_cleared_after_successful_approval(self):
+        member, application = self._make_application()
+        application.status = RegistrationApplication.Status.APPROVED
+        application.save()
+        application.refresh_from_db()
+        self.assertFalse(application.indigene_image)
+        self.assertFalse(application.indigene_image.name)
+
+    def test_indigene_image_not_deleted_on_rejection(self):
+        """
+        The brief this was built against only calls for deletion "after
+        successful approval" -- a rejection (possibly followed by
+        reapplication) leaves the verification image in place, unlike
+        the payment receipt which is cleared on both outcomes.
+        """
+        member, application = self._make_application()
+        indigene_path = application.indigene_image.path
+
+        application.status = RegistrationApplication.Status.REJECTED
+        application.rejection_reason = "Certificate of Origin unreadable."
+        application.save()
+        application.refresh_from_db()
+
+        self.assertTrue(application.indigene_image)
+        self.assertTrue(os.path.exists(indigene_path))
+
+    def test_failed_approval_does_not_prematurely_delete_indigene_image(self):
+        """
+        Simulates an approval that fails partway through (e.g. an
+        unexpected error saving the Member) inside the same
+        transaction.atomic() block Django admin's change view already
+        wraps every save in -- the image must survive exactly as if the
+        approval had never been attempted.
+        """
+        member, application = self._make_application()
+        indigene_path = application.indigene_image.path
+        self.assertTrue(os.path.exists(indigene_path))
+
+        application.status = RegistrationApplication.Status.APPROVED
+        with mock.patch("apps.members.models.Member.save", side_effect=RuntimeError("simulated failure")):
+            with self.assertRaises(RuntimeError):
+                with transaction.atomic():
+                    application.save()
+
+        application.refresh_from_db()
+        self.assertTrue(application.indigene_image)
+        self.assertTrue(os.path.exists(indigene_path))
+        self.assertEqual(application.status, RegistrationApplication.Status.PENDING)
 
 
 class UniquenessConstraintTests(MediaIsolatedTestCase):

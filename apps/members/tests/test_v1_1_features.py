@@ -131,6 +131,7 @@ class EmailFieldRegistrationFormTests(MediaIsolatedTestCase):
             "category": Member.Category.UNDERGRADUATE,
             "passport_photo": make_image("photo.png"),
             "receipt_image": make_image("receipt.png"),
+            "indigene_image": make_image("indigene.png"),
         }
         data.update(overrides)
         return data
@@ -187,6 +188,7 @@ class AcademicFieldsRegistrationTests(MediaIsolatedTestCase):
             "category": Member.Category.UNDERGRADUATE,
             "passport_photo": make_image("photo.png"),
             "receipt_image": make_image("receipt.png"),
+            "indigene_image": make_image("indigene.png"),
         }
         data.update(overrides)
         return data
