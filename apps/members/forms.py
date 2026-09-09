@@ -30,20 +30,19 @@ class MemberRegistrationForm(forms.ModelForm):
         help_text="Upload your payment receipt (image, max 5 MB).",
     )
 
-    # Member.gender is blank=True on the model (see models.py — added for
-    # the Membership Card System, optional because no registration flow
-    # collected it yet and every pre-existing Member has it empty). That
-    # same optionality is the business rule here: registrants may decline
-    # to answer, exactly like apps.accounts.forms's Communication Center
-    # targeting field treats this identical choice set. Declared
-    # explicitly (rather than left to ModelForm auto-generation) only to
-    # match that field's "---" blank-option label instead of Django's
-    # default "---------", for a consistent placeholder across the app;
-    # the choices themselves still come from Member.Gender, not a
-    # hardcoded list.
+    # Member.gender stays blank=True at the model level (see models.py --
+    # pre-existing Members from before this field was collected still have
+    # it empty, so the model can't require it without a data migration).
+    # The registration *form*, however, now requires an answer from every
+    # new applicant. Declared explicitly (rather than left to ModelForm
+    # auto-generation) to keep the "---" blank-option label consistent with
+    # apps.accounts.forms's Communication Center targeting field, which
+    # uses this same Member.Gender choice set; the blank option here is
+    # just an unselected placeholder, not a valid submission -- required=True
+    # rejects it like any other required field.
     gender = forms.ChoiceField(
         choices=[("", "---")] + list(Member.Gender.choices),
-        required=False,
+        required=True,
     )
 
     # Institution is presented as a searchable dropdown seeded from

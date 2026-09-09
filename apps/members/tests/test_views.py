@@ -13,6 +13,7 @@ def _registration_post_data(**overrides):
         "phone_number": "08012345678",
         "nin_number": "12345678901",
         "date_of_birth": "2002-05-14",
+        "gender": Member.Gender.FEMALE,
         "institution": "Gombe State University (GSU), Tudun Wada",
         "course": "Computer Science",
         "category": Member.Category.UNDERGRADUATE,
@@ -50,11 +51,12 @@ class RegisterViewTests(MediaIsolatedTestCase):
         member = Member.objects.get()
         self.assertEqual(member.gender, Member.Gender.MALE)
 
-    def test_registration_without_gender_still_succeeds(self):
-        response = self.client.post(reverse("members:register"), _registration_post_data())
-        self.assertEqual(response.status_code, 302)
-        member = Member.objects.get()
-        self.assertEqual(member.gender, "")
+    def test_registration_without_gender_fails(self):
+        response = self.client.post(
+            reverse("members:register"), _registration_post_data(gender="")
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Member.objects.exists())
 
     def test_successful_registration_redirects_to_success_page_with_application_number(self):
         response = self.client.post(reverse("members:register"), _registration_post_data())

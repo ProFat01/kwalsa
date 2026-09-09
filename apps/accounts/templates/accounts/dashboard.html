@@ -97,14 +97,14 @@
   </div>
 
   {% if pending_applications %}
-    <table class="data-table">
+    <table class="data-table data-table--stack">
       <thead><tr><th>Application</th><th>Applicant</th><th>Submitted</th><th></th></tr></thead>
       <tbody>
         {% for application in pending_applications %}
           <tr>
-            <td class="record">{{ application.application_number }}</td>
-            <td>{{ application.member.full_name }}</td>
-            <td>{{ application.submitted_at|date:"d M Y" }}</td>
+            <td class="record" data-label="Application">{{ application.application_number }}</td>
+            <td data-label="Applicant">{{ application.member.full_name }}</td>
+            <td data-label="Submitted">{{ application.submitted_at|date:"d M Y" }}</td>
             <td><a href="{% url 'admin:members_registrationapplication_change' application.pk %}">Review &rarr;</a></td>
           </tr>
         {% endfor %}
@@ -124,16 +124,16 @@
 <section class="content-block">
   <div class="section-heading"><span class="section-heading-icon" aria-hidden="true">&#128499;&#65039;</span><h2>Elections</h2></div>
   {% if election_overviews %}
-    <table class="data-table">
+    <table class="data-table data-table--stack">
       <thead><tr><th>Election</th><th>Status</th><th>Eligible</th><th>Votes Cast</th><th>Turnout</th><th></th></tr></thead>
       <tbody>
         {% for item in election_overviews %}
           <tr>
-            <td>{{ item.election.name }}</td>
-            <td><span class="badge badge-{{ item.election.status }}">{{ item.election.status }}</span></td>
-            <td class="record">{{ item.eligible_voters }}</td>
-            <td class="record">{{ item.votes_cast }}</td>
-            <td class="record">{{ item.turnout_percentage }}%</td>
+            <td data-label="Election">{{ item.election.name }}</td>
+            <td data-label="Status"><span class="badge badge-{{ item.election.status }}">{{ item.election.status }}</span></td>
+            <td class="record" data-label="Eligible">{{ item.eligible_voters }}</td>
+            <td class="record" data-label="Votes Cast">{{ item.votes_cast }}</td>
+            <td class="record" data-label="Turnout">{{ item.turnout_percentage }}%</td>
             <td><a href="{% url 'elections:admin_dashboard' item.election.pk %}">Manage &rarr;</a></td>
           </tr>
         {% endfor %}
@@ -190,14 +190,14 @@
     </div>
   </div>
   {% if recent_contact_messages %}
-    <table class="data-table">
+    <table class="data-table data-table--stack">
       <thead><tr><th>From</th><th>Subject</th><th>Received</th><th></th></tr></thead>
       <tbody>
         {% for message in recent_contact_messages %}
           <tr>
-            <td>{{ message.name }}{% if not message.is_read %} <span class="badge badge-active">New</span>{% endif %}</td>
-            <td>{{ message.subject }}</td>
-            <td>{{ message.submitted_at|date:"d M Y" }}</td>
+            <td data-label="From">{{ message.name }}{% if not message.is_read %} <span class="badge badge-active">New</span>{% endif %}</td>
+            <td data-label="Subject">{{ message.subject }}</td>
+            <td data-label="Received">{{ message.submitted_at|date:"d M Y" }}</td>
             <td><a href="{% url 'admin:core_contactmessage_change' message.pk %}">View &rarr;</a></td>
           </tr>
         {% endfor %}

@@ -87,7 +87,7 @@
         </div>
 
         <div class="form-row" data-field="gender">
-          <label for="{{ form.gender.id_for_label }}">{{ form.gender.label }} <span class="u-text-muted">(optional)</span></label>
+          <label for="{{ form.gender.id_for_label }}">{{ form.gender.label }}{% if form.gender.field.required %} <span aria-hidden="true">*</span>{% endif %}</label>
           {{ form.gender }}
           {% if form.gender.help_text %}<p class="help-text">{{ form.gender.help_text }}</p>{% endif %}
           {% for error in form.gender.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}

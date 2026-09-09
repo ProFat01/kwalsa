@@ -11,6 +11,7 @@ def _valid_form_data(**overrides):
         "phone_number": "08012345678",
         "nin_number": "12345678901",
         "date_of_birth": "2002-05-14",
+        "gender": Member.Gender.FEMALE,
         "institution": "Gombe State University (GSU), Tudun Wada",
         "course": "Computer Science",
         "category": Member.Category.UNDERGRADUATE,
@@ -103,13 +104,13 @@ class MemberRegistrationFormTests(MediaIsolatedTestCase):
         self.assertTrue(form.is_valid())
         self.assertFalse(getattr(form, "duplicate_detected", False))
 
-    def test_gender_is_optional(self):
-        # Matches Member.gender's own blank=True (see models.py) — a
-        # registrant who declines to answer must not be blocked.
-        form = MemberRegistrationForm(data=_valid_form_data(), files=self._files())
-        self.assertTrue(form.is_valid(), form.errors)
-        application = form.save(association=self.association)
-        self.assertEqual(application.member.gender, "")
+    def test_gender_is_required(self):
+        # Unlike Member.gender's own blank=True at the model level (which
+        # stays permissive for pre-existing records), the registration
+        # form now requires every new applicant to pick one.
+        form = MemberRegistrationForm(data=_valid_form_data(gender=""), files=self._files())
+        self.assertFalse(form.is_valid())
+        self.assertIn("gender", form.errors)
 
     def test_valid_gender_choice_is_saved_on_the_member(self):
         form = MemberRegistrationForm(

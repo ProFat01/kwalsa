@@ -178,11 +178,43 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   white-space: nowrap;
 }
 
-/* --- Layout primitives --- */
+/* --- Layout primitives ---
+   .section / .section--tight / .nav-bar below all sit on the same
+   element as .container (e.g. <div class="container section">,
+   <div class="container nav-bar">) and only mean to add *vertical*
+   spacing. Written as shorthand `padding: X 0`, though, each one is
+   equal specificity to .container and later in the cascade, so the
+   whole shorthand -- including the "0" for left/right -- wins outright
+   and silently erases .container's side padding. That's been true at
+   every screen width since before any of these page-padding passes,
+   which is why an input's visible left border could sit flush against
+   the true edge of the screen even though .container itself looked
+   correct in isolation. Every one of these is padding-top/
+   padding-bottom only from here on, so they add vertical spacing
+   without being able to touch (and so without being able to wipe out)
+   whatever .container has set for the sides. */
 .container { max-width: var(--container-width); margin: 0 auto; padding: 0 var(--space-4); }
-.section { padding: var(--space-12) 0; }
-.section--tight { padding: var(--space-8) 0; }
+.section { padding-top: var(--space-12); padding-bottom: var(--space-12); }
+.section--tight { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 .section--alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+/* --- Mobile page gutter ---
+   .container's 1rem side padding is fine at desktop widths, but on a
+   phone it puts every direct child -- page <h1>s, .position-block
+   <h2>s, section headings -- right at the edge of the glass, and
+   several cards (.summary-stat below) actually *tighten* their own
+   padding on top of that at this same breakpoint. Widening the page
+   gutter here gives everything -- headings and card edges alike --
+   consistent breathing room from the screen edge, matching what the
+   hero/stat sections on the home page already look like (their extra
+   inset comes from being nested inside additional card chrome, not
+   from .container itself). Every .container usage across every page
+   picks this up automatically. Left/right only (not shorthand) for
+   the same reason as above -- so this can't wipe out .section's
+   vertical padding on the same element at this breakpoint. */
+@media (max-width: 768px) {
+  .container { padding-left: var(--space-6); padding-right: var(--space-6); }
+}
 
 /* --- Subtle page-load animation ---
    Applied to the shared #main-content element that already exists on
@@ -209,7 +241,11 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) 0;
+  /* padding-top/bottom only -- see the note above .section for why
+     this can't be the padding shorthand on an element that's also
+     .container (<div class="container nav-bar">). */
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
   gap: var(--space-4);
 }
 .brand {
@@ -374,7 +410,19 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   }
 }
 
-/* --- Footer --- */
+/* --- Footer ---
+   .footer-grid / .footer-bottom / .footer-credit each sit on the same
+   element as .container (e.g. <div class="container footer-grid">).
+   They used to declare the vertical padding they need with the
+   shorthand `padding: X 0`, which -- being equal specificity to and
+   later in the cascade than .container's own `padding: 0 var(--space-N)`
+   -- won outright and silently zeroed the side padding .container was
+   supposed to contribute. Every line of footer text ended up flush
+   against the screen edge on mobile as a result, unrelated to (and
+   invisible before) the .container gutter fix elsewhere in this file.
+   Using padding-top/padding-bottom here instead lets these rules add
+   vertical spacing without touching -- and so without wiping out --
+   whatever .container has already set for the sides. */
 .site-footer {
   background: var(--ink);
   color: rgba(255, 255, 255, 0.75);
@@ -385,7 +433,8 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--space-8);
-  padding: var(--space-12) 0;
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
 }
 .footer-logo { height: 32px; width: auto; object-fit: contain; margin-bottom: var(--space-3); border-radius: var(--radius-sm); }
 .footer-grid .footer-heading { color: #fff; font-family: var(--font-body); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: var(--space-3); font-weight: 700; }
@@ -394,7 +443,8 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
 .footer-grid p { color: rgba(255, 255, 255, 0.65); margin-bottom: var(--space-2); }
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
-  padding: var(--space-4) 0;
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-4);
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.55);
   display: flex;
@@ -405,7 +455,8 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
 .social-links { display: flex; gap: var(--space-3); list-style: none; flex-wrap: wrap; }
 .footer-credit {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: var(--space-3) 0;
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
   font-size: 0.78rem;
   color: rgba(255, 255, 255, 0.45);
   text-align: center;
@@ -439,7 +490,8 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
       "support support"
       "follow  follow";
     gap: var(--space-6) var(--space-5);
-    padding: var(--space-8) 0;
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
   }
   .footer-brand { grid-area: brand; }
   .footer-quicklinks { grid-area: links; }

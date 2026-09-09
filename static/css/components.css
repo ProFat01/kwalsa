@@ -54,6 +54,74 @@ table.data-table td.is-number, table.data-table th.is-number { font-family: var(
   table.data-table { display: block; overflow-x: auto; white-space: nowrap; border-radius: var(--radius); }
 }
 
+/* --- Stacked/"card" table variant for narrow screens ---
+   Opt-in modifier (add alongside .data-table) for tables where a
+   horizontal-scroll fallback isn't good enough -- e.g. election Results,
+   where the Percentage column's vote-bar was running off the edge of the
+   viewport with no visible scroll affordance. Below 600px each <tr>
+   becomes a bordered card and each <td> becomes a labelled row, using
+   the value of its data-label attribute; above 600px this table looks
+   and behaves exactly like a normal .data-table. */
+@media (max-width: 600px) {
+  table.data-table--stack {
+    display: block;
+    overflow-x: visible;
+    white-space: normal;
+    background: transparent;
+    box-shadow: none;
+  }
+  table.data-table--stack thead {
+    /* Visually hidden but still announced by screen readers -- the
+       column headings become each row's data-label instead. */
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  table.data-table--stack tbody { display: block; }
+  table.data-table--stack tr {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-3);
+    overflow: hidden;
+  }
+  table.data-table--stack tr:last-child { margin-bottom: 0; }
+  table.data-table--stack td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--line);
+    text-align: right;
+  }
+  table.data-table--stack td:last-child { border-bottom: none; }
+  table.data-table--stack td[data-label]::before {
+    content: attr(data-label);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--slate);
+    font-weight: 600;
+  }
+  table.data-table--stack td[data-label="Candidate"] {
+    justify-content: flex-start;
+    text-align: left;
+    font-weight: 600;
+  }
+  table.data-table--stack td[data-label="Candidate"]::before { content: none; }
+  table.data-table--stack td.is-number .vote-bar-track {
+    flex-basis: 100%;
+    width: 100%;
+    margin-top: var(--space-1);
+  }
+}
+
 /* --- Statistic cards ---
    Reused, unmodified in the templates, across every module's
    dashboards (analytics x4, elections admin dashboard, registration
@@ -88,7 +156,12 @@ table.data-table td.is-number, table.data-table th.is-number { font-family: var(
   .summary-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
   .summary-stat {
     min-width: 0;
-    padding: var(--space-3) var(--space-3) var(--space-3) calc(var(--space-3) + 4px);
+    /* Was var(--space-3) (12px) here -- tighter than the desktop
+       padding just above, which is backwards on the format most
+       people actually view this on. Match desktop's var(--space-4)
+       so the card doesn't feel more cramped just because it's on a
+       phone. */
+    padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 4px);
   }
   .summary-stat .value { font-size: 1.35rem; }
 }
