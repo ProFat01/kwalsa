@@ -36,13 +36,6 @@
   <div class="position-block">
     <h2>{{ item.position.title }}</h2>
     {% if item.candidates %}
-      {# ISSUE 5 FIX: on narrow screens a 3-column table with a photo,
-         vote counts, and a percentage bar has no room to breathe -- the
-         Percentage column and the vote-bar were running off the edge of
-         the viewport with no scroll affordance. data-table--stack (see
-         components.css) turns each row into a labelled card below 600px
-         instead, using the data-label attributes for the row labels;
-         above 600px it's the same table as before. #}
       <table class="data-table data-table--stack">
         <thead>
           <tr><th>Candidate</th><th class="is-number">Votes</th><th class="is-number">Percentage</th></tr>
